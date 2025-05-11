@@ -2,14 +2,14 @@
 
 namespace insomnia {
 
-IndexPool::IndexPool(const std::filesystem::path &path) : max_index_(NULL_INDEX) {
+IndexPool::IndexPool(const std::filesystem::path &path) : max_index_(NULL_INDEX), path_(path) {
   bool file_exists = std::filesystem::exists(path);
   auto open_mode = std::ios::binary | std::ios::in | std::ios::out;
   if(!file_exists)
     open_mode |= std::ios::trunc;
   fstream_.open(path, open_mode);
   if(!fstream_.is_open())
-    throw invalid_pool("IndexPool failed to construct");
+    throw invalid_pool(std::string("IndexPool failed to construct. Path: " + path.string()).c_str());
   if(file_exists && std::filesystem::file_size(path) > sizeof(index_t) + sizeof(size_t))
     load();
 }
