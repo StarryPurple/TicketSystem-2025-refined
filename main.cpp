@@ -5,6 +5,9 @@
 #include "array.h"
 #include "fstream.h"
 #include "index_pool.h"
+#include "buffer_pool.h"
+#include "lru_k_replacer.h"
+#include "priority_queue.h"
 
 unsigned long hash1(const std::string &str) {
   unsigned long hash = 2166136261;
@@ -41,6 +44,7 @@ struct hash_pair {
   }
 };
 
+/*
 void BptTest() {
   using index_t = insomnia::array<char, 64>;
   using value_t = int;
@@ -77,8 +81,19 @@ void BptTest() {
 
   // system("diff -bB temp/output.txt temp/answer.txt");
 }
+*/
 
 int main() {
-  BptTest();
+  // BptTest();
+  insomnia::priority_queue<int> pq;
+  for(int i = 1; i <= 100; ++i)
+    pq.push(i * 100);
+  for(int i = 100; i >= 1; --i)
+    pq.decrease_top(i);
+  while(!pq.empty()) {
+    int t = pq.top();
+    pq.pop();
+    std::cout << t << ' ';
+  }
   return 0;
 }

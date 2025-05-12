@@ -1,6 +1,8 @@
 #ifndef INSOMNIA_EXCEPTION_H
 #define INSOMNIA_EXCEPTION_H
 
+#include <stdexcept>
+
 namespace insomnia {
 
 // inherits must be public for catch(std::exception &) to catch.

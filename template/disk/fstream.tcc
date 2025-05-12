@@ -49,7 +49,7 @@ void fstream<T, Meta>::write(index_t pos, const T *data) {
 }
 
 template <class T, class Meta> requires FstreamConcept<T, Meta>
-bool fstream<T, Meta>::read_meta(Meta *data) requires !std::is_same_v<Meta, void> {
+bool fstream<T, Meta>::read_meta(Meta *data) requires (!std::is_same_v<Meta, void>) {
   size_t required_size = SIZE_META;
   if(required_size > file_size_)
     return false;
@@ -59,7 +59,7 @@ bool fstream<T, Meta>::read_meta(Meta *data) requires !std::is_same_v<Meta, void
 }
 
 template <class T, class Meta> requires FstreamConcept<T, Meta>
-void fstream<T, Meta>::write_meta(const Meta *data) requires !std::is_same_v<Meta, void> {
+void fstream<T, Meta>::write_meta(const Meta *data) requires (!std::is_same_v<Meta, void>) {
   size_t required_size = SIZE_META;
   if(required_size > file_size_)
     reserve(required_size);

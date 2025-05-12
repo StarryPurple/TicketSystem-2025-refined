@@ -26,8 +26,8 @@ public:
   ~fstream();
   void write(index_t pos, const T *data);
   bool read(index_t pos, T *data); // returns false if read failed.
-  void write_meta(const Meta *data) requires !std::is_same_v<Meta, void>;
-  bool read_meta(Meta *data) requires !std::is_same_v<Meta, void>; // returns false if read failed.
+  void write_meta(const Meta *data) requires (!std::is_same_v<Meta, void>);
+  bool read_meta(Meta *data) requires (!std::is_same_v<Meta, void>); // returns false if read failed.
   std::filesystem::path path() const { return path_; }
   std::filesystem::path index_path() const { return index_pool_.path(); }
 private:
