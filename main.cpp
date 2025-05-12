@@ -8,6 +8,8 @@
 #include "buffer_pool.h"
 #include "lru_k_replacer.h"
 #include "priority_queue.h"
+#include "unordered_set.h"
+#include "map.h"
 
 unsigned long hash1(const std::string &str) {
   unsigned long hash = 2166136261;
@@ -85,15 +87,13 @@ void BptTest() {
 
 int main() {
   // BptTest();
-  insomnia::priority_queue<int> pq;
-  for(int i = 1; i <= 100; ++i)
-    pq.push(i * 100);
-  for(int i = 100; i >= 1; --i)
-    pq.decrease_top(i);
-  while(!pq.empty()) {
-    int t = pq.top();
-    pq.pop();
-    std::cout << t << ' ';
-  }
+  insomnia::LruKReplacer replacer(6, 2);
+  replacer.access(1);
+  replacer.access(2);
+  replacer.access(1);
+  replacer.unpin(1);
+  std::cout << replacer.evict() << ' ';
+  std::cout << replacer.can_evict() << ' ';
+  std::cout << replacer.evict();
   return 0;
 }

@@ -1,6 +1,8 @@
 #ifndef INSOMNIA_VECTOR_TCC
 #define INSOMNIA_VECTOR_TCC
 
+#include <cstring>
+
 #include "vector.h"
 
 namespace insomnia {

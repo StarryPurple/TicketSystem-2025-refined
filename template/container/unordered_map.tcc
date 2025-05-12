@@ -107,6 +107,8 @@ unordered_map<KeyT, ValueT, Hash, KeyEqual>&
 template <class KeyT, class ValueT, class Hash, class KeyEqual>
 unordered_map<KeyT, ValueT, Hash, KeyEqual>::~unordered_map() {
   clear();
+  for(size_t i = 0; i < _bucket_size; ++i)
+    delete _node_list[i];
   delete[] _node_list;
   delete _header;
 }

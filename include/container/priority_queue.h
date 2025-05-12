@@ -10,6 +10,8 @@ template <class T, class Compare = std::less<T>>
 class priority_queue {
 public:
   priority_queue(): _max_n(nullptr), _size(0), _comp(), ranks_(nullptr), ranks_size_(0) {}
+  explicit priority_queue(Compare comp)
+    : _max_n(nullptr), _size(0), _comp(std::move(comp)), ranks_(nullptr), ranks_size_(0) {}
   priority_queue(const priority_queue &other)
     : _size(other._size), _comp() {
     iterate_copy(_max_n, nullptr, other._max_n);
@@ -90,6 +92,7 @@ public:
     std::swap(_max_n, other._max_n);
     std::swap(_size, other._size);
   }
+  // You can use it when you need to change the status used in Compare functor.
   void decrease_top(const T &val) {
     if(empty())
       throw container_is_empty();
@@ -105,6 +108,7 @@ public:
     push(val); // _size increased 1 here
     --_size;
   }
+  // You can use it when you need to change the status used in Compare functor.
   void decrease_top(T &&val) {
     if(empty())
       throw container_is_empty();

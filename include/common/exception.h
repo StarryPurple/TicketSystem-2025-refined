@@ -62,6 +62,11 @@ public:
   explicit database_exception(const char *detail = "") : insomnia_exception(detail) {}
 };
 
+class algorithm_exception : public insomnia_exception {
+public:
+  explicit algorithm_exception(const char *detail = "") : insomnia_exception(detail) {}
+};
+
 class debug_exception : public database_exception {
 public:
   explicit debug_exception(const char *detail = "") : database_exception(detail) {}
