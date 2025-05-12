@@ -1,8 +1,6 @@
 #ifndef INSOMNIA_FSTREAM_TCC
 #define INSOMNIA_FSTREAM_TCC
 
-#include <cassert>
-
 #include "fstream.h"
 
 namespace insomnia {
@@ -74,7 +72,6 @@ template <class T, class Meta> requires FstreamConcept<T, Meta>
 void fstream<T, Meta>::reserve(size_t required_size) {
   if(required_size <= file_size_)
     return;
-  assert(required_size % SECTOR_SIZE == 0);
   fstream_.close();
   {
     std::ofstream temp(path_, std::ios::binary);

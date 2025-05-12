@@ -3,16 +3,10 @@
 
 #include "vector.h"
 #include "array.h"
-#include "fstream.h"
-#include "index_pool.h"
-#include "buffer_pool.h"
-#include "lru_k_replacer.h"
-#include "priority_queue.h"
-#include "unordered_set.h"
-#include "map.h"
+#include "multi_bplustree.h"
 
-unsigned long hash1(const std::string &str) {
-  unsigned long hash = 2166136261;
+u_long hash1(const std::string &str) {
+  u_long hash = 2166136261;
   for(const auto &c : str) {
     hash ^= c;
     hash *= 16777619;
@@ -20,8 +14,8 @@ unsigned long hash1(const std::string &str) {
   return hash;
 }
 
-unsigned long hash2(const std::string &str) {
-  unsigned long hash = 5371;
+u_long hash2(const std::string &str) {
+  u_long hash = 5371;
   for(const auto &c : str)
     hash = (hash << 5) + hash + c;
   return hash;
@@ -46,64 +40,43 @@ struct hash_pair {
   }
 };
 
-/*
 void BptTest() {
   using index_t = insomnia::array<char, 64>;
   using value_t = int;
-  using MulBpt_t = insomnia::MultiBPlusTree<index_t, value_t>;
+  using MulBpt_t = insomnia::MultiBpt<u_long, value_t>;
 
   auto dir = std::filesystem::current_path() / "data";
-  // std::filesystem::remove_all(dir);
+  std::filesystem::remove_all(dir);
   std::filesystem::create_directory(dir);
   auto name_base = dir / "test";
-  int k_param = 8;
-  int buffer_cap = 2048;
-  int thread_num = 1;
-  MulBpt_t mul_bpt(name_base, k_param, buffer_cap, thread_num);
+  int replacer_k_arg = 4;
+  int buffer_capacity = 2048;
+  MulBpt_t mul_bpt(name_base, buffer_capacity, replacer_k_arg);
 
-  // freopen("temp/input.txt", "r", stdin);
-  // freopen("temp/output.txt", "w", stdout);
+  freopen("temp/input.txt", "r", stdin);
+  freopen("temp/output.txt", "w", stdout);
 
   int optcnt, value;
-  index_t opt, index;
+  std::string opt, index;
   std::cin >> optcnt;
   for(int i = 1; i <= optcnt; ++i) {
     std::cin >> opt;
     if(opt[0] == 'i') {
       std::cin >> index >> value;
-      mul_bpt.insert(index, value);
+      mul_bpt.insert(hash2(index), value);
     } else if(opt[0] == 'f') {
       std::cin >> index;
-      print_list(mul_bpt.search(index));
+      print_list(mul_bpt.search(hash2(index)));
     } else if(opt[0] == 'd') {
       std::cin >> index >> value;
-      mul_bpt.remove(index, value);
+      mul_bpt.remove(hash2(index), value);
     }
   }
 
-  // system("diff -bB temp/output.txt temp/answer.txt");
+  system("diff -bB temp/output.txt temp/answer.txt");
 }
-*/
-
-struct T { int a; T(int _a) { a = _a; } };
-struct U : T { int b; U(int _a, int _b) : T(_a) { b = _b; } };
 
 int main() {
-  // BptTest();
-  auto test_dir = std::filesystem::current_path() / "data";
-  std::filesystem::remove_all(test_dir);
-  std::filesystem::create_directory(test_dir);
-  auto test_prefix = test_dir / "test";
-  insomnia::BufferPool<T, insomnia::MonoType, sizeof(U)> buf(test_prefix, 10, 2);
-  auto a = buf.alloc();
-  auto visitor = buf.visitor(a);
-  auto p1 = visitor.as_mut<U>();
-  std::cout << p1->a << ' ' << p1->b << std::endl;
-  *p1 = U(1, 2);
-  std::cout << p1->a << ' ' << p1->b << std::endl;
-  visitor.drop();
-  visitor = buf.visitor(a);
-  auto p2 = visitor.as<T>();
-  std::cout << p2->a << std::endl;
+  BptTest();
   return 0;
 }

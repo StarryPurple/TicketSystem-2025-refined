@@ -16,7 +16,8 @@ private:
   using fstream_t = fstream<SectorWrapper<T, max_size>, SectorWrapper<Meta>>;
   struct Frame {
 
-    explicit Frame(frame_id_t _frame_id) : frame_id(_frame_id), pin_count(0), is_dirty(false), is_valid(false) {}
+    explicit Frame(frame_id_t _frame_id)
+      : frame_id(_frame_id), pin_count(0), is_dirty(false), is_valid(false) {}
 
     char* data() { return data_wrapper.data(); }
 
@@ -33,11 +34,14 @@ public:
     // validness checked by frame_ == nullptr.
   public:
 
-    Visitor() : frame_(nullptr), fs_(nullptr) {}
+    Visitor() : frame_(nullptr), fs_(nullptr), replacer_(nullptr) {}
 
-    Visitor(Frame *frame, fstream_t *fs)
-      : frame_(frame), fs_(fs) {
-      ++frame_->pin_count;
+    Visitor(Frame *frame, fstream_t *fs, LruKReplacer *replacer)
+      : frame_(frame), fs_(fs), replacer_(replacer) {
+      replacer->access(frame->frame_id);
+      if(frame->pin_count == 0)
+        replacer->pin(frame->frame_id);
+      ++frame->pin_count;
     }
 
     // Actually no need in single thread... whatever.
@@ -45,19 +49,19 @@ public:
     Visitor& operator=(const Visitor &) noexcept = delete;
 
     Visitor(Visitor &&other)
-      : frame_(other.frame_), fs_(other.fs_) {
+      : frame_(other.frame_), fs_(other.fs_), replacer_(other.replacer_) {
       other.frame_ = nullptr;
       other.fs_ = nullptr;
+      other.replacer_ = nullptr;
     }
 
     Visitor& operator=(Visitor &&other) noexcept {
       if(this == &other)
         return *this;
       drop();
-      frame_ = other.frame_;
-      fs_ = other.fs_;
-      other.frame_ = nullptr;
-      other.fs_ = nullptr;
+      frame_ = other.frame_;       other.frame_ = nullptr;
+      fs_ = other.fs_;             other.fs_ = nullptr;
+      replacer_ = other.replacer_; other.replacer_ = nullptr;
       return *this;
     }
 
@@ -76,8 +80,11 @@ public:
       if(frame_ == nullptr)
         return;
       --frame_->pin_count;
+      if(frame_->pin_count == 0)
+        replacer_->unpin(frame_->frame_id);
       frame_ = nullptr;
       fs_ = nullptr;
+      replacer_ = nullptr;
     }
 
     template <class Derived> requires (std::derived_from<Derived, T> && (max_size >= sizeof(Derived)))
@@ -98,6 +105,7 @@ public:
   private:
     Frame *frame_;
     fstream_t *fs_;
+    LruKReplacer *replacer_;
   };
 
   void write_meta(const Meta *meta) requires (!EmptyMeta<Meta>) {
@@ -112,57 +120,15 @@ public:
     return true;
   }
 
-  BufferPool(const std::filesystem::path &path, int frame_cnt, int replacer_k_arg)
-    : path_(path), frame_count_(frame_cnt), replacer_(frame_count_, replacer_k_arg),
-      fs_(path.string() + ".dat") {
-    frames_.reserve(frame_cnt);
-    free_frames_.reserve(frame_cnt);
-    for(frame_id_t i = 0; i < frame_cnt; ++i) {
-      frames_.push_back(Frame(i));
-      free_frames_.push_back(i);
-    }
-  }
+  BufferPool(const std::filesystem::path &path, frame_id_t frame_cnt, int replacer_k_arg);
 
   ~BufferPool() { flush_all(); }
 
   page_id_t alloc() { return fs_.alloc(); }
 
-  void dealloc(page_id_t page_id) {
-    if(auto it = usage_map_.find(page_id); it != usage_map_.end()) {
-      frame_id_t frame_id = it->second;
-      if(frames_[frame_id].pin_count > 0)
-        throw pool_exception("Buffer pool error : Freeing pages in use.");
-      frames_[frame_id].is_valid = false;
-      free_frames_.push_back(frame_id);
-    }
-    fs_.dealloc(page_id);
-  }
+  void dealloc(page_id_t page_id);
 
-  Visitor visitor(page_id_t page_id) {
-    frame_id_t frame_id;
-    if(auto it = usage_map_.find(page_id); it != usage_map_.end()) {
-      frame_id = it->second;
-      return Visitor(&frames_[frame_id], &fs_);
-    }
-    if(!free_frames_.empty()) {
-      frame_id = free_frames_.back();
-      free_frames_.pop_back();
-      frames_[frame_id].is_valid = true;
-    } else {
-      if(!replacer_.can_evict()) {
-        // You can design a coarse visitor which interacts with disk memory
-        // directly through fstream.
-        throw pool_overflow("Buffer pool full");
-      }
-      frame_id = replacer_.evict();
-      flush_frame(frames_[frame_id]);
-      usage_map_.erase(frames_[frame_id].page_id);
-    }
-    frames_[frame_id].page_id = page_id;
-    usage_map_.emplace(page_id, frame_id);
-    fs_.read(page_id, &frames_[frame_id].data_wrapper);
-    return Visitor(&frames_[frame_id], &fs_);
-  }
+  Visitor visitor(page_id_t page_id);
 
   void flush_page(page_id_t page_id) {
     if(auto it = usage_map_.find(page_id); it != usage_map_.end()) {

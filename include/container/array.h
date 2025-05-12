@@ -201,16 +201,6 @@ public:
   const char* c_str() const { return _data; }
   std::string str() { return std::string(_data); }
 
-  friend std::ostream& operator<<(std::ostream &os, array &arr) {
-    os << arr._data;
-    return os;
-  }
-
-  friend std::istream& operator>>(std::istream &is, const array &arr) {
-    is >> arr._data;
-    return is;
-  }
-
   unsigned long hash() const {
     unsigned long hash = 5381;
     const char *cur = _data;

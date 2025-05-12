@@ -13,6 +13,10 @@ inline constexpr size_t SECTOR_SIZE = 4096; // 512 in some regions/nations... ma
 
 struct MonoType {};
 
+constexpr size_t SectorAlignedSize(size_t initial_size) {
+  return (initial_size + SECTOR_SIZE - 1) / SECTOR_SIZE * SECTOR_SIZE;
+}
+
 template <class T>
 concept SectorAligned =
     !std::is_same_v<T, MonoType> &&
@@ -25,7 +29,7 @@ public:
   static constexpr size_t size() { return sizeof(data_); }
   char* data() { return data_; }
 private:
-  alignas(SECTOR_SIZE) char data_[(max_size + SECTOR_SIZE - 1) / SECTOR_SIZE * SECTOR_SIZE] {};
+  alignas(SECTOR_SIZE) char data_[SectorAlignedSize(max_size)] {};
 };
 
 template <size_t max_size>
