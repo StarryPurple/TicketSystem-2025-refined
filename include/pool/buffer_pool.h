@@ -8,7 +8,7 @@ namespace insomnia {
 
 // According to the document of LruKReplacer,
 // replacer_k_arg is recommended to be power of 2.
-template <class T, class Meta = void, size_t max_size = sizeof(T)> requires (max_size >= sizeof(T))
+template <class T, class Meta = MonoType, size_t max_size = sizeof(T)> requires (max_size >= sizeof(T))
 class BufferPool {
 public:
   using frame_id_t = LruKReplacer::access_id_t;
@@ -18,7 +18,7 @@ private:
 
     explicit Frame(frame_id_t _frame_id) : frame_id(_frame_id), pin_count(0), is_dirty(false), is_valid(false) {}
 
-    T* data() { return data_wrapper.data(); }
+    char* data() { return data_wrapper.data(); }
 
     const frame_id_t frame_id;
     index_t page_id;
@@ -84,7 +84,7 @@ public:
     const Derived* as() {
       if(frame_ == nullptr)
         throw pool_exception("Buffer pool error: Using invalid visitor");
-      return dynamic_cast<const Derived*>(frame_->data());
+      return reinterpret_cast<const Derived*>(frame_->data());
     }
 
     template <class Derived> requires (std::derived_from<Derived, T> && (max_size >= sizeof(Derived)))
@@ -92,7 +92,7 @@ public:
       if(frame_ == nullptr)
         throw pool_exception("Buffer pool error: Using invalid visitor");
       frame_->is_dirty = true;
-      return dynamic_cast<Derived*>(frame_->data());
+      return reinterpret_cast<Derived*>(frame_->data());
     }
 
   private:
@@ -142,7 +142,7 @@ public:
     frame_id_t frame_id;
     if(auto it = usage_map_.find(page_id); it != usage_map_.end()) {
       frame_id = it->second;
-      return Visitor(frames_ + frame_id, &fs_);
+      return Visitor(&frames_[frame_id], &fs_);
     }
     if(!free_frames_.empty()) {
       frame_id = free_frames_.back();
@@ -161,7 +161,7 @@ public:
     frames_[frame_id].page_id = page_id;
     usage_map_.emplace(page_id, frame_id);
     fs_.read(page_id, &frames_[frame_id].data_wrapper);
-    return Visitor(frames_ + frame_id, &fs_);
+    return Visitor(&frames_[frame_id], &fs_);
   }
 
   void flush_page(page_id_t page_id) {
@@ -174,7 +174,8 @@ public:
   void flush_all() {
     // since no concurrency involved, even a pinned frame can be flushed.
     for(frame_id_t i = 0; i < frame_count_; ++i)
-      flush_frame(frames_[i]);
+      if(frames_[i].is_valid)
+        flush_frame(frames_[i]);
   }
 
 private:

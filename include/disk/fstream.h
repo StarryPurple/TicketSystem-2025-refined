@@ -11,9 +11,11 @@ inline constexpr page_id_t NULL_PAGE_ID = NULL_INDEX;
 
 inline constexpr size_t SECTOR_SIZE = 4096; // 512 in some regions/nations... maybe imagination?
 
+struct MonoType {};
+
 template <class T>
 concept SectorAligned =
-    !std::is_void_v<T> ||
+    !std::is_same_v<T, MonoType> &&
     (sizeof(T) % SECTOR_SIZE == 0);
 
 template <class T, size_t max_size = sizeof(T)>
@@ -21,29 +23,29 @@ requires (max_size >= sizeof(T))
 class SectorWrapper {
 public:
   static constexpr size_t size() { return sizeof(data_); }
-  T* data() { return reinterpret_cast<T*>(data_); }
+  char* data() { return data_; }
 private:
   alignas(SECTOR_SIZE) char data_[(max_size + SECTOR_SIZE - 1) / SECTOR_SIZE * SECTOR_SIZE] {};
 };
 
 template <size_t max_size>
-class SectorWrapper<void, max_size> {
+class SectorWrapper<MonoType, max_size> {
   static constexpr size_t size() { return 0; }
-  void* data() = delete;
+  char* data() = delete;
 };
 
 template <class T>
-struct is_void_sector_wrapper : std::false_type {};
+struct is_mono_sector_wrapper : std::false_type {};
 
 template <size_t max_size>
-struct is_void_sector_wrapper<SectorWrapper<void, max_size>> : std::true_type {};
+struct is_mono_sector_wrapper<SectorWrapper<MonoType, max_size>> : std::true_type {};
 
 template <class T>
-inline constexpr bool is_void_sector_wrapper_v = is_void_sector_wrapper<T>::value;
+inline constexpr bool is_void_sector_wrapper_v = is_mono_sector_wrapper<T>::value;
 
 template <class Meta>
 concept EmptyMeta =
-    std::is_void_v<Meta> ||
+    std::is_same_v<Meta, MonoType> ||
     is_void_sector_wrapper_v<Meta>;
 
 template <class T, class Meta>
@@ -52,7 +54,7 @@ concept FstreamConcept =
   (EmptyMeta<Meta> || SectorAligned<Meta>);
 
 // Hard coded under the fact that NULL_INDEX = 0.
-template <class T, class Meta = void>
+template <class T, class Meta = MonoType>
 requires FstreamConcept<T, Meta>
 class fstream {
   static constexpr size_t SIZE_T = sizeof(T);

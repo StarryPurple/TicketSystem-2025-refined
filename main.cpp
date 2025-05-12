@@ -85,15 +85,25 @@ void BptTest() {
 }
 */
 
+struct T { int a; T(int _a) { a = _a; } };
+struct U : T { int b; U(int _a, int _b) : T(_a) { b = _b; } };
+
 int main() {
   // BptTest();
-  insomnia::LruKReplacer replacer(6, 2);
-  replacer.access(1);
-  replacer.access(2);
-  replacer.access(1);
-  replacer.unpin(1);
-  std::cout << replacer.evict() << ' ';
-  std::cout << replacer.can_evict() << ' ';
-  std::cout << replacer.evict();
+  auto test_dir = std::filesystem::current_path() / "data";
+  std::filesystem::remove_all(test_dir);
+  std::filesystem::create_directory(test_dir);
+  auto test_prefix = test_dir / "test";
+  insomnia::BufferPool<T, insomnia::MonoType, sizeof(U)> buf(test_prefix, 10, 2);
+  auto a = buf.alloc();
+  auto visitor = buf.visitor(a);
+  auto p1 = visitor.as_mut<U>();
+  std::cout << p1->a << ' ' << p1->b << std::endl;
+  *p1 = U(1, 2);
+  std::cout << p1->a << ' ' << p1->b << std::endl;
+  visitor.drop();
+  visitor = buf.visitor(a);
+  auto p2 = visitor.as<T>();
+  std::cout << p2->a << std::endl;
   return 0;
 }
