@@ -1,12 +1,15 @@
 #ifndef INSOMNIA_FSTREAM_TCC
 #define INSOMNIA_FSTREAM_TCC
 
+#include <cassert>
+
 #include "fstream.h"
 
 namespace insomnia {
 
 template <class T, class Meta> requires FstreamConcept<T, Meta>
-fstream<T, Meta>::fstream(const std::filesystem::path &path) : path_(path), index_pool_(path.string() + ".idx") {
+fstream<T, Meta>::fstream(const std::filesystem::path &path)
+    : path_(path), index_allocator_(path.string() + ".idx") {
   bool file_exists = std::filesystem::exists(path);
   auto open_mode = std::ios::binary | std::ios::in | std::ios::out;
   if(!file_exists)
@@ -24,10 +27,10 @@ fstream<T, Meta>::~fstream() {
 }
 
 template <class T, class Meta> requires FstreamConcept<T, Meta>
-bool fstream<T, Meta>::read(index_t pos, T *data) {
-  if(pos <= NULL_INDEX)
-    throw pool_exception(std::string("Accessing invalid index. Correlated file: " + path_.string()).c_str());
-  size_t offset = SIZE_META + (pos - NULL_INDEX - 1) * SIZE_T;
+bool fstream<T, Meta>::read(page_id_t pos, T *data) {
+  if(pos <= NULL_PAGE_ID)
+    throw pool_exception(std::string("Accessing invalid page. Correlated file: " + path_.string()).c_str());
+  size_t offset = SIZE_META + (pos - NULL_PAGE_ID - 1) * SIZE_T;
   size_t required_size = offset + SIZE_T;
   if(required_size > file_size_)
     return false;
@@ -37,19 +40,19 @@ bool fstream<T, Meta>::read(index_t pos, T *data) {
 }
 
 template <class T, class Meta> requires FstreamConcept<T, Meta>
-void fstream<T, Meta>::write(index_t pos, const T *data) {
-  if(pos <= NULL_INDEX)
-    throw pool_exception(std::string("Accessing invalid index. Correlated file: " + path_.string()).c_str());
-  size_t offset = SIZE_META + (pos - NULL_INDEX - 1) * SIZE_T;
+void fstream<T, Meta>::write(page_id_t pos, const T *data) {
+  if(pos <= NULL_PAGE_ID)
+    throw pool_exception(std::string("Accessing invalid page. Correlated file: " + path_.string()).c_str());
+  size_t offset = SIZE_META + (pos - NULL_PAGE_ID - 1) * SIZE_T;
   size_t required_size = offset + SIZE_T;
   if(required_size > file_size_)
-    reserve(required_size + (pos - NULL_INDEX - 1) * SIZE_T);
+    reserve(required_size + (pos - NULL_PAGE_ID - 1) * SIZE_T);
   fstream_.seekp(offset);
   fstream_.write(reinterpret_cast<const char*>(data), SIZE_T);
 }
 
 template <class T, class Meta> requires FstreamConcept<T, Meta>
-bool fstream<T, Meta>::read_meta(Meta *data) requires (!std::is_same_v<Meta, void>) {
+bool fstream<T, Meta>::read_meta(Meta *data) requires (!EmptyMeta<Meta>) {
   size_t required_size = SIZE_META;
   if(required_size > file_size_)
     return false;
@@ -59,7 +62,7 @@ bool fstream<T, Meta>::read_meta(Meta *data) requires (!std::is_same_v<Meta, voi
 }
 
 template <class T, class Meta> requires FstreamConcept<T, Meta>
-void fstream<T, Meta>::write_meta(const Meta *data) requires (!std::is_same_v<Meta, void>) {
+void fstream<T, Meta>::write_meta(const Meta *data) requires (!EmptyMeta<Meta>) {
   size_t required_size = SIZE_META;
   if(required_size > file_size_)
     reserve(required_size);
@@ -71,6 +74,7 @@ template <class T, class Meta> requires FstreamConcept<T, Meta>
 void fstream<T, Meta>::reserve(size_t required_size) {
   if(required_size <= file_size_)
     return;
+  assert(required_size % SECTOR_SIZE == 0);
   fstream_.close();
   {
     std::ofstream temp(path_, std::ios::binary);
