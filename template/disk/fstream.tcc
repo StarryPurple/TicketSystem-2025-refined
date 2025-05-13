@@ -73,11 +73,14 @@ void fstream<T, Meta>::reserve(size_t required_size) {
   if(required_size <= file_size_)
     return;
   fstream_.close();
+  std::filesystem::resize_file(path_, required_size);
+  /*
   {
-    std::ofstream temp(path_, std::ios::binary);
+    std::ofstream temp(path_, std::ios::binary | std::ios::in | std::ios::out | std::ios::ate);
     temp.seekp(required_size - 1);
     temp.put('0');
   }
+  */
   fstream_.open(path_, std::ios::binary | std::ios::in | std::ios::out);
   file_size_ = required_size;
 }

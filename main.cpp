@@ -76,11 +76,15 @@ void BptTest() {
   // system("diff -bB temp/output.txt temp/answer.txt");
 }
 
-int main() {
+void SaferBptTest() {
   try {
     BptTest();
-  } catch(insomnia::pool_overflow &) {
+  } catch(insomnia::pool_exception &) {
     std::cout << "err";
   }
+}
+
+int main() {
+  BptTest();
   return 0;
 }
