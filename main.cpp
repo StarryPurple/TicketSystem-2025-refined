@@ -50,7 +50,7 @@ void BptTest() {
   std::filesystem::create_directory(dir);
   auto name_base = dir / "test";
   int replacer_k_arg = 4;
-  int buffer_capacity = 2048;
+  int buffer_capacity = 128;
   MulBpt_t mul_bpt(name_base, buffer_capacity, replacer_k_arg);
 
   // freopen("temp/input.txt", "r", stdin);
@@ -68,7 +68,6 @@ void BptTest() {
       std::cin >> index;
       print_list(mul_bpt.slow_search(index));
     } else if(opt[0] == 'd') {
-      throw insomnia::debug_exception();
       std::cin >> index >> value;
       mul_bpt.remove(index, value);
     }
