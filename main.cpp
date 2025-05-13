@@ -50,7 +50,7 @@ void BptTest() {
   std::filesystem::create_directory(dir);
   auto name_base = dir / "test";
   int replacer_k_arg = 4;
-  int buffer_capacity = 4096;
+  int buffer_capacity = 6;
   MulBpt_t mul_bpt(name_base, buffer_capacity, replacer_k_arg);
 
   // freopen("temp/input.txt", "r", stdin);
@@ -79,12 +79,12 @@ void BptTest() {
 void SaferBptTest() {
   try {
     BptTest();
-  } catch(insomnia::pool_exception &) {
+  } catch(insomnia::debug_exception &) {
     std::cout << "err";
   }
 }
 
 int main() {
-  BptTest();
+  SaferBptTest();
   return 0;
 }

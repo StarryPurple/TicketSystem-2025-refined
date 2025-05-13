@@ -70,7 +70,11 @@ public:
 
   const KeyT& key(int pos) const { return storage_[pos].key; }
   const ValueT& value(int pos) const { return storage_[pos].value; }
-  page_id_t child(int pos) const { return storage_[pos].child; }
+  page_id_t child(int pos) const {
+    if(pos < 0 || pos >= size_)
+      throw debug_exception();
+    return storage_[pos].child;
+  }
 
 private:
   Storage storage_[CAPACITY];
