@@ -66,7 +66,7 @@ void BptTest() {
       mul_bpt.insert(index, value);
     } else if(opt[0] == 'f') {
       std::cin >> index;
-      print_list(mul_bpt.slow_search(index));
+      print_list(mul_bpt.search(index));
     } else if(opt[0] == 'd') {
       std::cin >> index >> value;
       mul_bpt.remove(index, value);
@@ -85,6 +85,6 @@ void SaferBptTest() {
 }
 
 int main() {
-  BptTest();
+  SaferBptTest();
   return 0;
 }
