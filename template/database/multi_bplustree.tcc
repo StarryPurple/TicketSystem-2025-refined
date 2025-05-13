@@ -251,7 +251,7 @@ bool MultiBpt<KeyT, ValueT, KeyCompare, ValueCompare>::remove(const KeyT &key, c
       auto lft_node = lft_writer.template as_mut<Internal>();
       if(lft_node->size() + node->size() <= lft_node->merge_bound()) {
         lft_node->coalesce(node);
-        leaf_visitor.drop();
+        visitor.drop(); // Aww, my eyes.
         buf_pool_.dealloc(parent_node->value(pos));
         parent_node->remove(pos);
       } else {
