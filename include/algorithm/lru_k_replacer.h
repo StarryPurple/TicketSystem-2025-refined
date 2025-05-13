@@ -17,11 +17,11 @@ public:
 private:
   class Slot {
   public:
-    Slot(int k) : k_(k), history_(k), pinned_(true), vis_count_(0) {}
+    Slot(int k) : k_(k), history_(k), pinned_(false), vis_count_(0) {}
     // some unnecessary memory alloc/dealloc might happen?
     ~Slot() = default;
     void reset() {
-      pinned_ = true;
+      pinned_ = false;
       vis_count_ = 0;
     }
     void access(time_t time) {
@@ -55,6 +55,7 @@ public:
     : capacity_(capacity), k_(k), unpinned_available_cnt_(0), time_(0), slots_(capacity, Slot(k)) {}
   void access(access_id_t access_id); // Attention: initially taken as pinned.
   bool can_evict() const { return unpinned_available_cnt_ > 0; }
+  access_id_t free_cnt() const { return unpinned_available_cnt_; }
   access_id_t evict(); // returns capacity of the replacer(invalid) if no eviction can be performed.
   bool remove(access_id_t access_id);
   bool pin(access_id_t access_id);    // returns false if access id not in replacer.

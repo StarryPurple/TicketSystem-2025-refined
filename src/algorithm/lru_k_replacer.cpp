@@ -19,14 +19,16 @@ void LruKReplacer::access(access_id_t access_id) {
   slots_[access_id].reset();
   slots_[access_id].access(time_);
   l1_set_.insert(access_id);
+  ++unpinned_available_cnt_;
 }
 
 LruKReplacer::access_id_t LruKReplacer::evict() {
   if(!can_evict())
-    throw algorithm_exception("Lru k replacer can't evict anything.");
+    return capacity_;
+    // throw algorithm_exception("Lru k replacer can't evict anything.");
   if(!l1_set_.empty()) {
     access_id_t evict_id = capacity_;
-    time_t k_time = time_;
+    time_t k_time = time_ + 1;
     for(const auto &access_id : l1_set_) {
       if(slots_[access_id].is_pinned())
         continue;
@@ -44,7 +46,7 @@ LruKReplacer::access_id_t LruKReplacer::evict() {
   }
   if(!l0_set_.empty()) {
     access_id_t evict_id = capacity_;
-    time_t k_time = time_;
+    time_t k_time = time_ + 1;
     for(const auto &access_id : l0_set_) {
       if(slots_[access_id].is_pinned())
         continue;
@@ -60,7 +62,7 @@ LruKReplacer::access_id_t LruKReplacer::evict() {
       return evict_id;
     }
   }
-  throw algorithm_exception("Invalid code. Please check the code logic.");
+  // throw algorithm_exception("Invalid code. Please check the code logic.");
   return capacity_; // Shouldn't reach here.
 }
 
