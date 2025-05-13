@@ -8,7 +8,11 @@ namespace insomnia {
 class MultiBptNodeBase {
 public:
 
-  bool is_leaf() const { return node_type_ == NodeT::Leaf; }
+  bool is_leaf() const {
+    if(node_type_ != NodeT::Leaf && node_type_ != NodeT::Internal)
+      throw debug_exception();
+    return node_type_ == NodeT::Leaf;
+  }
 
   int max_size() const { return max_size_; }
 
@@ -70,11 +74,7 @@ public:
 
   const KeyT& key(int pos) const { return storage_[pos].key; }
   const ValueT& value(int pos) const { return storage_[pos].value; }
-  page_id_t child(int pos) const {
-    if(pos < 0 || pos >= size_)
-      throw debug_exception();
-    return storage_[pos].child;
-  }
+  page_id_t child(int pos) const { return storage_[pos].child; }
 
 private:
   Storage storage_[CAPACITY];
