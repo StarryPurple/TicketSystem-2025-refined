@@ -87,6 +87,9 @@ public:
       replacer_ = nullptr;
     }
 
+    char* data() { return frame_->data(); }
+    const char* data() const { return frame_->data(); }
+
     template <class Derived> requires (std::derived_from<Derived, T> && (max_size >= sizeof(Derived)))
     const Derived* as() {
       if(frame_ == nullptr)

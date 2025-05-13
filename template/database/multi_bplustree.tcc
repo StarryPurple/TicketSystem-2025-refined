@@ -252,7 +252,7 @@ bool MultiBpt<KeyT, ValueT, KeyCompare, ValueCompare>::remove(const KeyT &key, c
       if(lft_node->size() + node->size() <= lft_node->merge_bound()) {
         lft_node->coalesce(node);
         visitor.drop(); // Aww, my eyes.
-        buf_pool_.dealloc(parent_node->value(pos));
+        buf_pool_.dealloc(parent_node->child(pos));
         parent_node->remove(pos);
       } else {
         lft_node->redistribute_right(node);
@@ -264,7 +264,7 @@ bool MultiBpt<KeyT, ValueT, KeyCompare, ValueCompare>::remove(const KeyT &key, c
       if(node->size() + rht_node->size() <= rht_node->merge_bound()) {
         node->coalesce(rht_node);
         rht_writer.drop();
-        buf_pool_.dealloc(parent_node->value(pos + 1));
+        buf_pool_.dealloc(parent_node->child(pos + 1));
         parent_node->remove(pos + 1);
       } else {
         rht_node->redistribute_left(node);
