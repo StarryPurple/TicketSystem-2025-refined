@@ -19,17 +19,17 @@ BufferPool<T, Meta, max_size>::BufferPool(const std::filesystem::path &path, fra
 
 template <class T, class Meta, size_t max_size> requires (max_size >= sizeof(T))
 void BufferPool<T, Meta, max_size>::dealloc(page_id_t page_id) {
+    /*
   if(auto it = usage_map_.find(page_id); it != usage_map_.end()) {
     frame_id_t frame_id = it->second;
-    /*
     if(frames_[frame_id].pin_count > 0)
       throw pool_exception("Buffer pool error : Freeing pages in use.");
-      */
     frames_[frame_id].is_valid = false;
     free_frames_.push_back(frame_id);
     usage_map_.erase(it);
   }
   fs_.dealloc(page_id);
+      */
 }
 
 template <class T, class Meta, size_t max_size> requires (max_size >= sizeof(T))
