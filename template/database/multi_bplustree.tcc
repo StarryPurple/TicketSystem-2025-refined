@@ -277,7 +277,7 @@ bool MultiBpt<KeyT, ValueT, KeyCompare, ValueCompare>::remove(const KeyT &key, c
   if(root_visitor.template as<Base>()->size() > 1)
     return true;
   auto root_node = root_visitor.template as<Internal>();
-  auto new_root_ptr = root_node->value(0);
+  auto new_root_ptr = root_node->child(0);
   // root_node->remove(0);
   root_visitor.drop();
   buf_pool_.dealloc(root_ptr_);
