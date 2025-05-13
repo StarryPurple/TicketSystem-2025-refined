@@ -68,6 +68,7 @@ void BptTest() {
       std::cin >> index;
       print_list(mul_bpt.slow_search(index));
     } else if(opt[0] == 'd') {
+      throw insomnia::debug_exception();
       std::cin >> index >> value;
       mul_bpt.remove(index, value);
     }
