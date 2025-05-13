@@ -43,18 +43,18 @@ struct hash_pair {
 void BptTest() {
   using index_t = insomnia::array<char, 64>;
   using value_t = int;
-  using MulBpt_t = insomnia::MultiBpt<u_long, value_t>;
+  using MulBpt_t = insomnia::MultiBpt<index_t, value_t>;
 
   auto dir = std::filesystem::current_path() / "data";
-  std::filesystem::remove_all(dir);
+  // std::filesystem::remove_all(dir);
   std::filesystem::create_directory(dir);
   auto name_base = dir / "test";
   int replacer_k_arg = 4;
   int buffer_capacity = 2048;
   MulBpt_t mul_bpt(name_base, buffer_capacity, replacer_k_arg);
 
-  freopen("temp/input.txt", "r", stdin);
-  freopen("temp/output.txt", "w", stdout);
+  // freopen("temp/input.txt", "r", stdin);
+  // freopen("temp/output.txt", "w", stdout);
 
   int optcnt, value;
   std::string opt, index;
@@ -63,17 +63,17 @@ void BptTest() {
     std::cin >> opt;
     if(opt[0] == 'i') {
       std::cin >> index >> value;
-      mul_bpt.insert(hash2(index), value);
+      mul_bpt.insert(index, value);
     } else if(opt[0] == 'f') {
       std::cin >> index;
-      print_list(mul_bpt.search(hash2(index)));
+      print_list(mul_bpt.search(index));
     } else if(opt[0] == 'd') {
       std::cin >> index >> value;
-      mul_bpt.remove(hash2(index), value);
+      mul_bpt.remove(index, value);
     }
   }
 
-  system("diff -bB temp/output.txt temp/answer.txt");
+  // system("diff -bB temp/output.txt temp/answer.txt");
 }
 
 int main() {
