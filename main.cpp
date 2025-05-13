@@ -79,7 +79,7 @@ void BptTest() {
 void SaferBptTest() {
   try {
     BptTest();
-  } catch(insomnia::invalid_pool &) {
+  } catch(insomnia::pool_overflow &) {
     std::cout << "err";
   }
 }
