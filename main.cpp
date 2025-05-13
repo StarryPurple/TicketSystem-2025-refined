@@ -79,9 +79,9 @@ void BptTest() {
 int main() {
   try {
     BptTest();
-  } catch(insomnia::algorithm_exception &) {
+  } catch(insomnia::container_exception &) {
     std::cout << "err";
-  } catch(insomnia::disk_exception &) {
+  } catch(insomnia::pool_exception &) {
     std::cout << "err";
   }
   return 0;
