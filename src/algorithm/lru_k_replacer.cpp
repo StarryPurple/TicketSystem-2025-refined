@@ -24,8 +24,7 @@ void LruKReplacer::access(access_id_t access_id) {
 
 LruKReplacer::access_id_t LruKReplacer::evict() {
   if(!can_evict())
-    return capacity_;
-    // throw algorithm_exception("Lru k replacer can't evict anything.");
+    throw algorithm_exception("Lru k replacer can't evict anything.");
   if(!l1_set_.empty()) {
     access_id_t evict_id = capacity_;
     time_t k_time = time_ + 1;
