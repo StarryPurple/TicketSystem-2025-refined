@@ -23,6 +23,8 @@ public:
 
   vector<ValueT> search(const KeyT &key);
 
+  vector<ValueT> slow_search(const KeyT &key);
+
   bool insert(const KeyT &key, const ValueT &value);
 
   bool remove(const KeyT &key, const ValueT &value);
