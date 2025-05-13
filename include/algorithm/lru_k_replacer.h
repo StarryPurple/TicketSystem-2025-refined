@@ -52,10 +52,10 @@ private:
   };
 public:
   explicit LruKReplacer(access_id_t capacity, int k = 2)
-    : capacity_(capacity), k_(k), unpinned_available_cnt_(0), time_(0), slots_(capacity, Slot(k)) {}
+    : capacity_(capacity), k_(k), size_(0), time_(0), slots_(capacity, Slot(k)) {}
   void access(access_id_t access_id); // Attention: initially taken as pinned.
-  bool can_evict() const { return unpinned_available_cnt_ > 0; }
-  access_id_t free_cnt() const { return unpinned_available_cnt_; }
+  bool can_evict() const { return size_ > 0; }
+  access_id_t free_cnt() const { return size_; }
   access_id_t evict(); // returns capacity of the replacer(invalid) if no eviction can be performed.
   bool remove(access_id_t access_id);
   bool pin(access_id_t access_id);    // returns false if access id not in replacer.
@@ -63,7 +63,7 @@ public:
 private:
   const access_id_t capacity_;
   const int k_;
-  access_id_t unpinned_available_cnt_;
+  access_id_t size_;
   time_t time_;
   vector<Slot> slots_;
   unordered_set<access_id_t> l0_set_, l1_set_;

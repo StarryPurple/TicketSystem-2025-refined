@@ -8,11 +8,7 @@ namespace insomnia {
 class MultiBptNodeBase {
 public:
 
-  bool is_leaf() const {
-    if(node_type_ != NodeT::Leaf && node_type_ != NodeT::Internal)
-      throw debug_exception();
-    return node_type_ == NodeT::Leaf;
-  }
+  bool is_leaf() const { return node_type_ == NodeT::Leaf; }
 
   int max_size() const { return max_size_; }
 

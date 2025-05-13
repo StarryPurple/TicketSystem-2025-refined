@@ -19,7 +19,7 @@ void LruKReplacer::access(access_id_t access_id) {
   slots_[access_id].reset();
   slots_[access_id].access(time_);
   l1_set_.insert(access_id);
-  ++unpinned_available_cnt_;
+  ++size_;
 }
 
 LruKReplacer::access_id_t LruKReplacer::evict() {
@@ -39,7 +39,7 @@ LruKReplacer::access_id_t LruKReplacer::evict() {
     }
     if(evict_id != capacity_) {
       l1_set_.erase(evict_id);
-      --unpinned_available_cnt_;
+      --size_;
       return evict_id;
     }
   }
@@ -57,11 +57,11 @@ LruKReplacer::access_id_t LruKReplacer::evict() {
     }
     if(evict_id != capacity_) {
       l0_set_.erase(evict_id);
-      --unpinned_available_cnt_;
+      --size_;
       return evict_id;
     }
   }
-  // throw algorithm_exception("Invalid code. Please check the code logic.");
+  throw algorithm_exception("Invalid code. Please check the code logic.");
   return capacity_; // Shouldn't reach here.
 }
 
@@ -70,14 +70,14 @@ bool LruKReplacer::remove(access_id_t access_id) {
     if(slots_[access_id].is_pinned())
       return false;
     l0_set_.erase(access_id);
-    --unpinned_available_cnt_;
+    --size_;
     return true;
   }
   if(l1_set_.contains(access_id)) {
     if(slots_[access_id].is_pinned())
       return false;
     l1_set_.erase(access_id);
-    --unpinned_available_cnt_;
+    --size_;
     return true;
   }
   return false;
@@ -87,14 +87,14 @@ bool LruKReplacer::remove(access_id_t access_id) {
 bool LruKReplacer::pin(access_id_t access_id) {
   if(l0_set_.contains(access_id)) {
     if(!slots_[access_id].is_pinned()) {
-      --unpinned_available_cnt_;
+      --size_;
       slots_[access_id].pin();
     }
     return true;
   }
   if(l1_set_.contains(access_id)) {
     if(!slots_[access_id].is_pinned()) {
-      --unpinned_available_cnt_;
+      --size_;
       slots_[access_id].pin();
     }
     return true;
@@ -105,14 +105,14 @@ bool LruKReplacer::pin(access_id_t access_id) {
 bool LruKReplacer::unpin(access_id_t access_id) {
   if(l0_set_.contains(access_id)) {
     if(slots_[access_id].is_pinned()) {
-      ++unpinned_available_cnt_;
+      ++size_;
       slots_[access_id].unpin();
     }
     return true;
   }
   if(l1_set_.contains(access_id)) {
     if(slots_[access_id].is_pinned()) {
-      ++unpinned_available_cnt_;
+      ++size_;
       slots_[access_id].unpin();
     }
     return true;
