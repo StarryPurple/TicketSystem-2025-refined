@@ -170,7 +170,7 @@ public:
 
   void dealloc(page_id_t page_id);
 
-  DefaultVisitor visitor(page_id_t page_id);
+  Visitor visitor(page_id_t page_id);
 
   void flush_page(page_id_t page_id) {
     if(auto it = usage_map_.find(page_id); it != usage_map_.end()) {
