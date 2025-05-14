@@ -69,7 +69,7 @@ public:
 
     void flush() {
       if(frame_ == nullptr)
-        throw pool_exception("Buffer pool error: Flushing invalid visitor.");
+        throw invalid_page("Buffer pool error: Flushing invalid visitor.");
       if(frame_->is_dirty) {
         fs_->write(frame_->page_id, &frame_->data_wrapper);
         frame_->is_dirty = false;
@@ -93,14 +93,14 @@ public:
     template <class Derived> requires (std::derived_from<Derived, T> && (max_size >= sizeof(Derived)))
     const Derived* as() {
       if(frame_ == nullptr)
-        throw pool_exception("Buffer pool error: Using invalid visitor");
+        throw invalid_page("Buffer pool error: Using invalid visitor");
       return reinterpret_cast<const Derived*>(frame_->data());
     }
 
     template <class Derived> requires (std::derived_from<Derived, T> && (max_size >= sizeof(Derived)))
     Derived* as_mut() {
       if(frame_ == nullptr)
-        throw pool_exception("Buffer pool error: Using invalid visitor");
+        throw invalid_page("Buffer pool error: Using invalid visitor");
       frame_->is_dirty = true;
       return reinterpret_cast<Derived*>(frame_->data());
     }
@@ -151,7 +151,7 @@ private:
 
   void flush_frame(Frame &frame) {
     if(!frame.is_valid)
-      throw pool_exception("Buffer pool error: Flushing invalid frame.");
+      throw invalid_page("Buffer pool error: Flushing invalid frame.");
     if(frame.is_dirty) {
       fs_.write(frame.page_id, &frame.data_wrapper);
       frame.is_dirty = false;
