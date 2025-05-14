@@ -123,6 +123,45 @@ public:
     return true;
   }
 
+  class DefaultVisitor {
+  public:
+    DefaultVisitor(page_id_t page_id, fstream_t *fs) : page_id_(page_id), is_dirty_(false), fs_(fs) {
+      fs_->read(page_id, &data_);
+    }
+    ~DefaultVisitor() { drop(); }
+    DefaultVisitor(const DefaultVisitor&) = delete;
+    DefaultVisitor(DefaultVisitor&&) = default;
+    DefaultVisitor& operator=(const DefaultVisitor&) = delete;
+    DefaultVisitor& operator=(DefaultVisitor&&) = default;
+
+    void flush() {
+      if(is_dirty_) {
+        fs_->write(page_id_, &data_);
+        is_dirty_ = false;
+      }
+    }
+    void drop() { flush(); }
+
+    char* data() { return data_.data(); }
+    const char* data() const { return data_.data(); }
+    template <class Derived> requires (std::derived_from<Derived, T> && (max_size >= sizeof(Derived)))
+    const Derived* as() {
+      return reinterpret_cast<const Derived*>(data_.data());
+    }
+
+    template <class Derived> requires (std::derived_from<Derived, T> && (max_size >= sizeof(Derived)))
+    Derived* as_mut() {
+      is_dirty_ = true;
+      return reinterpret_cast<Derived*>(data_.data());
+    }
+
+  private:
+    page_id_t page_id_;
+    SectorWrapper<T, max_size> data_;
+    bool is_dirty_;
+    fstream_t *fs_;
+  };
+
   BufferPool(const std::filesystem::path &path, frame_id_t frame_cnt, int replacer_k_arg);
 
   ~BufferPool() { flush_all(); }
@@ -131,7 +170,7 @@ public:
 
   void dealloc(page_id_t page_id);
 
-  Visitor visitor(page_id_t page_id);
+  DefaultVisitor visitor(page_id_t page_id);
 
   void flush_page(page_id_t page_id) {
     if(auto it = usage_map_.find(page_id); it != usage_map_.end()) {
@@ -146,6 +185,7 @@ public:
       if(frames_[i].is_valid)
         flush_frame(frames_[i]);
   }
+
 
 private:
 

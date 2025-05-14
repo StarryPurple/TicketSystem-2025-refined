@@ -13,7 +13,7 @@ class MultiBpt {
   using Internal = MultiBptInternal<KeyT, ValueT>;
   using Leaf = MultiBptLeaf<KeyT, ValueT>;
   using BufferType = BufferPool<Base, page_id_t, std::max(sizeof(Internal), sizeof(Leaf))>;
-  using Visitor = typename BufferType::Visitor;
+  using Visitor = typename BufferType::DefaultVisitor;
 
 public:
 
