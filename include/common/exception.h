@@ -57,6 +57,11 @@ public:
   explicit invalid_pool(const char *detail = "") : pool_exception(detail) {}
 };
 
+class invalid_page : public pool_exception {
+public:
+  explicit invalid_page(const char *detail = "") : pool_exception(detail) {}
+};
+
 class database_exception : public insomnia_exception {
 public:
   explicit database_exception(const char *detail = "") : insomnia_exception(detail) {}

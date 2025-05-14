@@ -1,6 +1,7 @@
 #include <cassert>
 #include <iostream>
 #include <filesystem>
+#include <map>
 
 #include "vector.h"
 #include "array.h"
@@ -26,7 +27,7 @@ void print_list(insomnia::vector<int> &&list) {
   if(list.empty())
     std::cout << "null" << std::endl;
   else {
-    for(int &val : list)
+    for(auto &val : list)
       std::cout << val << ' ';
     std::cout << std::endl;
   }
@@ -48,7 +49,8 @@ void BptTest() {
   // freopen("temp/input.txt", "r", stdin);
   // freopen("temp/output.txt", "w", stdout);
 
-  int optcnt, value;
+  int optcnt;
+  int value;
   std::string opt, index;
   std::cin >> optcnt;
   for(int i = 1; i <= optcnt; ++i) {
@@ -71,12 +73,12 @@ void BptTest() {
 void SaferBptTest() {
   try {
     BptTest();
-  } catch(insomnia::debug_exception &) {
+  } catch(insomnia::invalid_page &) {
     std::cout << "err";
   }
 }
 
 int main() {
-  BptTest();
+  SaferBptTest();
   return 0;
 }

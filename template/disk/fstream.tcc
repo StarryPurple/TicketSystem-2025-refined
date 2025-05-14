@@ -27,7 +27,7 @@ fstream<T, Meta>::~fstream() {
 template <class T, class Meta> requires FstreamConcept<T, Meta>
 bool fstream<T, Meta>::read(page_id_t pos, T *data) {
   if(pos <= NULL_PAGE_ID)
-    throw pool_exception(std::string("Accessing invalid page. Correlated file: " + path_.string()).c_str());
+    throw invalid_page(std::string("Accessing invalid page. Correlated file: " + path_.string()).c_str());
   size_t offset = SIZE_META + (pos - NULL_PAGE_ID - 1) * SIZE_T;
   size_t required_size = offset + SIZE_T;
   if(required_size > file_size_)
@@ -40,7 +40,7 @@ bool fstream<T, Meta>::read(page_id_t pos, T *data) {
 template <class T, class Meta> requires FstreamConcept<T, Meta>
 void fstream<T, Meta>::write(page_id_t pos, const T *data) {
   if(pos <= NULL_PAGE_ID)
-    throw pool_exception(std::string("Accessing invalid page. Correlated file: " + path_.string()).c_str());
+    throw invalid_page(std::string("Accessing invalid page. Correlated file: " + path_.string()).c_str());
   size_t offset = SIZE_META + (pos - NULL_PAGE_ID - 1) * SIZE_T;
   size_t required_size = offset + SIZE_T;
   if(required_size > file_size_)
