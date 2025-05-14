@@ -31,7 +31,9 @@ void BufferPool<T, Meta, max_size>::dealloc(page_id_t page_id) {
 }
 
 template <class T, class Meta, size_t max_size> requires (max_size >= sizeof(T))
-typename BufferPool<T, Meta, max_size>::Visitor BufferPool<T, Meta, max_size>::visitor(page_id_t page_id) {
+typename BufferPool<T, Meta, max_size>::DefaultVisitor BufferPool<T, Meta, max_size>::visitor(page_id_t page_id) {
+  return DefaultVisitor(page_id, &fs_);
+  /*
   frame_id_t frame_id;
   if(auto it = usage_map_.find(page_id); it != usage_map_.end()) {
     frame_id = it->second;
@@ -55,6 +57,7 @@ typename BufferPool<T, Meta, max_size>::Visitor BufferPool<T, Meta, max_size>::v
   usage_map_.emplace(page_id, frame_id);
   fs_.read(page_id, &frames_[frame_id].data_wrapper);
   return Visitor(&frames_[frame_id], &fs_, &replacer_);
+  */
 }
 
 }

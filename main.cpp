@@ -79,6 +79,6 @@ void SaferBptTest() {
 }
 
 int main() {
-  SaferBptTest();
+  BptTest();
   return 0;
 }

@@ -31,10 +31,8 @@ index_t IndexPool::alloc() {
 }
 
 void IndexPool::dealloc(index_t index) {
-  /*
   if(index <= NULL_INDEX || index > max_index_)
     throw pool_exception("Deallocing definitely invalid index.");
-  */
   unallocated_.push_back(index);
 }
 
