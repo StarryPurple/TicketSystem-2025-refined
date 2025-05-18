@@ -1,7 +1,7 @@
 #include <cassert>
 #include <iostream>
 #include <filesystem>
-#include <map>
+#include <mutex>
 
 #include "vector.h"
 #include "array.h"
@@ -39,7 +39,7 @@ void BptTest() {
   using MulBpt_t = insomnia::MultiBpt<index_t, value_t>;
 
   auto dir = std::filesystem::current_path() / "data";
-  // std::filesystem::remove_all(dir);
+  std::filesystem::remove_all(dir);
   std::filesystem::create_directory(dir);
   auto name_base = dir / "test";
   int replacer_k_arg = 4;
