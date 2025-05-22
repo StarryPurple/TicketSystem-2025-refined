@@ -43,7 +43,7 @@ void BptTest() {
   std::filesystem::create_directory(dir);
   auto name_base = dir / "test";
   int replacer_k_arg = 4;
-  int buffer_capacity = 4096;
+  int buffer_capacity = 512;
   MulBpt_t mul_bpt(name_base, buffer_capacity, replacer_k_arg);
 
   // freopen("temp/input.txt", "r", stdin);
