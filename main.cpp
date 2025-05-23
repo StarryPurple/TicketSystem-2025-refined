@@ -82,7 +82,7 @@ void MultitaskBptTest() {
   std::filesystem::create_directory(data_dir);
   auto name_base = data_dir / "test";
   int replacer_k_arg = 4;
-  int buffer_capacity = 512;
+  int buffer_capacity = 16;
 
   auto subtest_dir = std::filesystem::current_path() / "subtest";
   std::vector<std::filesystem::path> input_files;
@@ -133,6 +133,6 @@ void MultitaskBptTest() {
 }
 
 int main() {
-  BptTest();
+  SaferBptTest();
   return 0;
 }
