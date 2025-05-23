@@ -67,9 +67,9 @@ void BptTest() {
 void SaferBptTest() {
   try {
     BptTest();
-  } catch(insomnia::pool_exception &) {
+  } catch(insomnia::container_exception &) {
     std::cout << "err";
-  } catch(insomnia::disk_exception &) {
+  } catch(insomnia::database_exception &) {
     std::cout << "err";
   }
 }
