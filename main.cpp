@@ -6,8 +6,8 @@
 #include "array.h"
 #include "multi_bplustree.h"
 
-u_long hash1(const std::string &str) {
-  u_long hash = 2166136261;
+uint64_t hash1(const std::string &str) {
+  uint64_t hash = 2166136261;
   for(const auto &c : str) {
     hash ^= c;
     hash *= 16777619;
@@ -15,8 +15,8 @@ u_long hash1(const std::string &str) {
   return hash;
 }
 
-u_long hash2(const std::string &str) {
-  u_long hash = 5371;
+uint64_t hash2(const std::string &str) {
+  uint64_t hash = 5371;
   for(const auto &c : str)
     hash = (hash << 5) + hash + c;
   return hash;
@@ -33,7 +33,7 @@ void print_list(insomnia::vector<int> &&list) {
 }
 
 void BptTest() {
-  using index_t = insomnia::array<char, 64>;
+  using index_t = uint64_t;
   using value_t = int;
   using MulBpt_t = insomnia::MultiBpt<index_t, value_t>;
 
@@ -52,13 +52,13 @@ void BptTest() {
     std::cin >> opt;
     if(opt[0] == 'i') {
       std::cin >> index >> value;
-      mul_bpt.insert(index, value);
+      mul_bpt.insert(hash1(index), value);
     } else if(opt[0] == 'f') {
       std::cin >> index;
-      print_list(mul_bpt.search(index));
+      print_list(mul_bpt.search(hash1(index)));
     } else if(opt[0] == 'd') {
       std::cin >> index >> value;
-      mul_bpt.remove(index, value);
+      mul_bpt.remove(hash1(index), value);
     }
   }
 }
@@ -132,6 +132,6 @@ void MultitaskBptTest() {
 }
 
 int main() {
-  SaferBptTest();
+  BptTest();
   return 0;
 }
