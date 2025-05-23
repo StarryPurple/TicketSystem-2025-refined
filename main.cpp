@@ -67,7 +67,7 @@ void BptTest() {
 void SaferBptTest() {
   try {
     BptTest();
-  } catch(std::exception &) {
+  } catch(...) {
     std::cout << "err";
   }
 }
