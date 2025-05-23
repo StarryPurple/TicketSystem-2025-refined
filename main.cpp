@@ -1,4 +1,3 @@
-#include <cassert>
 #include <iostream>
 #include <filesystem>
 #include <mutex>
@@ -42,7 +41,7 @@ void BptTest() {
   std::filesystem::create_directory(dir);
   auto name_base = dir / "test";
   int replacer_k_arg = 4;
-  int buffer_capacity = 512;
+  int buffer_capacity = 1536;
   MulBpt_t mul_bpt(name_base, buffer_capacity, replacer_k_arg);
 
   int optcnt;
