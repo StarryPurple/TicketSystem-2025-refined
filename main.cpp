@@ -67,7 +67,7 @@ void BptTest() {
 void SaferBptTest() {
   try {
     BptTest();
-  } catch(insomnia::debug_exception &) {
+  } catch(insomnia::insomnia_exception &) {
     std::cout << "err";
   }
 }
