@@ -133,6 +133,6 @@ void MultitaskBptTest() {
 }
 
 int main() {
-  SaferBptTest();
+  BptTest();
   return 0;
 }
