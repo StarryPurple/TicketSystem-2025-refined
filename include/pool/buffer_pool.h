@@ -87,6 +87,8 @@ public:
       replacer_ = nullptr;
     }
 
+    page_id_t page_id() const { return frame_->page_id; }
+
     char* data() { return frame_->data(); }
     const char* data() const { return frame_->data(); }
 

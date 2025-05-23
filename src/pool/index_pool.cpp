@@ -10,7 +10,7 @@ IndexPool::IndexPool(const std::filesystem::path &path) : max_index_(NULL_INDEX)
   fstream_.open(path, open_mode);
   if(!fstream_.is_open())
     throw invalid_pool(std::string("IndexPool failed to construct. Path: " + path.string()).c_str());
-  if(file_exists && std::filesystem::file_size(path) > sizeof(index_t) + sizeof(size_t))
+  if(file_exists && std::filesystem::file_size(path) >= sizeof(index_t) + sizeof(size_t))
     load();
 }
 
@@ -52,6 +52,8 @@ void IndexPool::save() {
   fstream_.write(reinterpret_cast<const char*>(&unallocated_size), sizeof(size_t));
   fstream_.write(reinterpret_cast<const char*>(unallocated_.data()), unallocated_size * sizeof(index_t));
   fstream_.flush();
+  auto size = std::filesystem::file_size(path_);
+  ++size;
 }
 
 }
