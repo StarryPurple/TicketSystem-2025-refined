@@ -41,8 +41,23 @@ void print_list(insomnia::vector<int> &&list) {
   std::cout << '\n';
 }
 
+struct char64 {
+  char arr[65];
+  char64() { arr[0] = '\0'; }
+  char64(const std::string &str) { strcpy(arr, str.c_str()); }
+  char64(const char64 &other) { strcpy(arr, other.arr); }
+  char64& operator=(const char64 &other) {
+    if(this == &other)
+      return *this;
+    strcpy(arr, other.arr);
+    return *this;
+  }
+  bool operator==(const char64 &other) const { return strcmp(arr, other.arr) == 0; }
+  bool operator<(const char64 &other) const { return strcmp(arr, other.arr) < 0; }
+};
+
 void BptTest() {
-  using index_t = char[65];
+  using index_t = char64;
   using value_t = int;
   using MulBpt_t = insomnia::MultiBpt<index_t, value_t>;
 
@@ -56,7 +71,7 @@ void BptTest() {
   int optcnt;
   int value;
   std::string opt;
-  index_t index;
+  std::string index;
   std::cin >> optcnt;
   for(int i = 1; i <= optcnt; ++i) {
     std::cin >> opt;
