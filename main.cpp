@@ -33,7 +33,7 @@ void print_list(insomnia::vector<int> &&list) {
 }
 
 void BptTest() {
-  using index_t = uint64_t;
+  using index_t = insomnia::array<char, 64>;
   using value_t = int;
   using MulBpt_t = insomnia::MultiBpt<index_t, value_t>;
 
@@ -52,13 +52,13 @@ void BptTest() {
     std::cin >> opt;
     if(opt[0] == 'i') {
       std::cin >> index >> value;
-      mul_bpt.insert(hash2(index), value);
+      mul_bpt.insert(index, value);
     } else if(opt[0] == 'f') {
       std::cin >> index;
-      print_list(mul_bpt.search(hash2(index)));
+      print_list(mul_bpt.search(index));
     } else if(opt[0] == 'd') {
       std::cin >> index >> value;
-      mul_bpt.remove(hash2(index), value);
+      mul_bpt.remove(index, value);
     }
   }
 }
@@ -72,7 +72,7 @@ void SaferBptTest() {
 }
 
 void MultitaskBptTest() {
-  using index_t = insomnia::array<char, 64>;
+  using index_t = insomnia::array<char, 65>;
   using value_t = int;
   using MulBpt_t = insomnia::MultiBpt<index_t, value_t>;
 
