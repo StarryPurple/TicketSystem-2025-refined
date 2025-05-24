@@ -52,13 +52,13 @@ void BptTest() {
     std::cin >> opt;
     if(opt[0] == 'i') {
       std::cin >> index >> value;
-      mul_bpt.insert(hash1(index), value);
+      mul_bpt.insert(hash2(index), value);
     } else if(opt[0] == 'f') {
       std::cin >> index;
-      print_list(mul_bpt.search(hash1(index)));
+      print_list(mul_bpt.search(hash2(index)));
     } else if(opt[0] == 'd') {
       std::cin >> index >> value;
-      mul_bpt.remove(hash1(index), value);
+      mul_bpt.remove(hash2(index), value);
     }
   }
 }
@@ -110,10 +110,6 @@ void MultitaskBptTest() {
         mul_bpt.insert(index, value);
       } else if(opt[0] == 'f') {
         fin >> index;
-        if(index == "110229") {
-          int a = 1;
-          a += a;
-        }
         auto lst = mul_bpt.search(index);
         if(lst.empty()) fout << "null";
         else {
