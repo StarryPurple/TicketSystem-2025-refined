@@ -41,23 +41,10 @@ void print_list(insomnia::vector<int> &&list) {
   std::cout << '\n';
 }
 
-struct char64 {
-  char arr[65];
-  char64() { arr[0] = '\0'; }
-  char64(const std::string &str) { strcpy(arr, str.c_str()); }
-  char64(const char64 &other) { strcpy(arr, other.arr); }
-  char64& operator=(const char64 &other) {
-    if(this == &other)
-      return *this;
-    strcpy(arr, other.arr);
-    return *this;
-  }
-  bool operator==(const char64 &other) const { return strcmp(arr, other.arr) == 0; }
-  bool operator<(const char64 &other) const { return strcmp(arr, other.arr) < 0; }
-};
 
 void BptTest() {
-  using index_t = char64;
+  using str_t = insomnia::array<char, 64>;
+  using index_t = uint64_t;
   using value_t = int;
   using MulBpt_t = insomnia::MultiBpt<index_t, value_t>;
 
@@ -77,13 +64,13 @@ void BptTest() {
     std::cin >> opt;
     if(opt[0] == 'i') {
       std::cin >> index >> value;
-      mul_bpt.insert(index, value);
+      mul_bpt.insert(str_t(index).hash(), value);
     } else if(opt[0] == 'f') {
       std::cin >> index;
-      print_list(mul_bpt.search(index));
+      print_list(mul_bpt.search(str_t(index).hash()));
     } else if(opt[0] == 'd') {
       std::cin >> index >> value;
-      mul_bpt.remove(index, value);
+      mul_bpt.remove(str_t(index).hash(), value);
     }
   }
 }

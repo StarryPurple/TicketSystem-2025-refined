@@ -7,7 +7,7 @@
 
 namespace insomnia {
 
-template <class T, size_t size> requires std::is_default_constructible_v<T> && (size > 0)
+template <class T, size_t N> requires std::is_default_constructible_v<T> && (N > 0)
 class array {
 public:
   class iterator;
@@ -17,7 +17,7 @@ public:
 
   array() = default;
   array(std::initializer_list<T> &&list) {
-    for(size_t i = 0; i < list.size() && i < size; ++i)
+    for(size_t i = 0; i < list.size() && i < N; ++i)
       _data[i] = std::move(list[i]);
   }
   ~array() = default;
@@ -33,11 +33,11 @@ public:
     iterator operator++(int) { auto tmp = *this; ++idx_; return tmp; }
     iterator operator--(int) { auto tmp = *this; --idx_; return tmp; }
     T& operator*() {
-      if(idx_ >= size) throw invalid_iterator();
+      if(idx_ >= N) throw invalid_iterator();
       return container_->_data[idx_];
     }
     T* operator->() {
-      if(idx_ >= size) throw invalid_iterator();
+      if(idx_ >= N) throw invalid_iterator();
       return &container_->_data[idx_];
     }
     bool operator==(const iterator &other) const { return container_ == other.container_ && idx_ == other.idx_; }
@@ -60,11 +60,11 @@ public:
     const_iterator operator++(int) { auto tmp = *this; ++idx_; return tmp; }
     const_iterator operator--(int) { auto tmp = *this; --idx_; return tmp; }
     const T& operator*() const {
-      if(idx_ >= size) throw invalid_iterator();
+      if(idx_ >= N) throw invalid_iterator();
       return container_->_data[idx_];
     }
     const T* operator->() const {
-      if(idx_ >= size) throw invalid_iterator();
+      if(idx_ >= N) throw invalid_iterator();
       return &container_->_data[idx_];
     }
     bool operator==(const iterator &other) const { return container_ == other._container && idx_ == other._idx; }
@@ -76,16 +76,16 @@ public:
   };
 
   iterator begin() { return iterator(this, 0); }
-  iterator end() { return iterator(this, size); }
+  iterator end() { return iterator(this, N); }
   const_iterator cbegin() const { return const_iterator(this, 0); }
-  const_iterator cend() const { return const_iterator(this, size); }
+  const_iterator cend() const { return const_iterator(this, N); }
 
   T& at(size_t idx) {
-    if(idx >= size) throw index_out_of_bound();
+    if(idx >= N) throw index_out_of_bound();
     return _data[idx];
   }
   const T& at(size_t idx) const {
-    if(idx >= size) throw index_out_of_bound();
+    if(idx >= N) throw index_out_of_bound();
     return _data[idx];
   }
   T& operator[](size_t idx) { return _data[idx]; }
@@ -93,11 +93,11 @@ public:
 
   T* data() { return _data; }
 private:
-  T _data[size];
+  T _data[N];
 };
 
-template <size_t size>
-class array<char, size> {
+template <size_t N>
+class array<char, N> {
 public:
   class iterator;
   class const_iterator;
@@ -106,12 +106,12 @@ public:
 
   array() { _data[0] = '\0'; }
   array(const char *str) {
-    auto len = std::min(size, std::strlen(str));
+    auto len = std::min(N, std::strlen(str));
     memcpy(_data, str, len);
     _data[len] = '\0';
   }
   array(const std::string &str) {
-    auto len = std::min(size, str.length());
+    auto len = std::min(N, str.length());
     memcpy(_data, str.c_str(), len);
     _data[len] = '\0';
   }
@@ -128,7 +128,7 @@ public:
     iterator operator++(int) { auto tmp = *this; ++_idx; return tmp; }
     iterator operator--(int) { auto tmp = *this; --_idx; return tmp; }
     char& operator*() {
-      if(_idx >= size) throw invalid_iterator();
+      if(_idx >= N) throw invalid_iterator();
       return _container->_data[_idx];
     }
     bool operator==(const iterator &other) const { return _container == other._container && _idx == other._idx; }
@@ -151,7 +151,7 @@ public:
     const_iterator operator++(int) { auto tmp = *this; ++_idx; return tmp; }
     const_iterator operator--(int) { auto tmp = *this; --_idx; return tmp; }
     const char& operator*() const {
-      if(_idx >= size) throw invalid_iterator();
+      if(_idx >= N) throw invalid_iterator();
       return _container->operator[](_idx);
     }
     bool operator==(const iterator &other) const { return _container == other._container && _idx == other._idx; }
@@ -163,16 +163,16 @@ public:
   };
 
   iterator begin() { return iterator(this, 0); }
-  iterator end() { return iterator(this, size); }
+  iterator end() { return iterator(this, N); }
   const_iterator cbegin() const { return const_iterator(this, 0); }
-  const_iterator cend() const { return const_iterator(this, size); }
+  const_iterator cend() const { return const_iterator(this, N); }
 
   char& at(size_t idx) {
-    if(idx >= size) throw index_out_of_bound();
+    if(idx >= N) throw index_out_of_bound();
     return _data[idx];
   }
   const char& at(size_t idx) const {
-    if(idx >= size) throw index_out_of_bound();
+    if(idx >= N) throw index_out_of_bound();
     return _data[idx];
   }
   char& operator[](size_t idx) { return _data[idx]; }
@@ -202,7 +202,7 @@ public:
   std::string str() { return std::string(_data); }
 
   uint64_t hash() const {
-    uint64_t hash = 5381;
+    uint64_t hash = 5371;
     const char *cur = _data;
     char c;
     while((c = *cur++)) {
@@ -212,7 +212,7 @@ public:
   }
 
 private:
-  char _data[size + 1];
+  char _data[N + 1];
 };
 
 }
