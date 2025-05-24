@@ -22,6 +22,15 @@ uint64_t hash2(const std::string &str) {
   return hash;
 }
 
+uint64_t hash3(const std::string &str) {
+  uint64_t hash = 0xCBF29CE484222325ULL;
+  for (const auto &c : str) {
+    hash ^= static_cast<uint64_t>(c);
+    hash *= 0x100000001B3ULL;
+  }
+  return hash ^ (hash >> 32);
+}
+
 void print_list(insomnia::vector<int> &&list) {
   if(list.empty())
     std::cout << "null";
@@ -33,7 +42,7 @@ void print_list(insomnia::vector<int> &&list) {
 }
 
 void BptTest() {
-  using index_t = insomnia::array<char, 64>;
+  using index_t = uint64_t;
   using value_t = int;
   using MulBpt_t = insomnia::MultiBpt<index_t, value_t>;
 
@@ -52,13 +61,13 @@ void BptTest() {
     std::cin >> opt;
     if(opt[0] == 'i') {
       std::cin >> index >> value;
-      mul_bpt.insert(index, value);
+      mul_bpt.insert(hash3(index), value);
     } else if(opt[0] == 'f') {
       std::cin >> index;
-      print_list(mul_bpt.search(index));
+      print_list(mul_bpt.search(hash3(index)));
     } else if(opt[0] == 'd') {
       std::cin >> index >> value;
-      mul_bpt.remove(index, value);
+      mul_bpt.remove(hash3(index), value);
     }
   }
 }
