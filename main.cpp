@@ -42,7 +42,7 @@ void print_list(insomnia::vector<int> &&list) {
 }
 
 void BptTest() {
-  using index_t = insomnia::array<char, 127>;
+  using index_t = char[65];
   using value_t = int;
   using MulBpt_t = insomnia::MultiBpt<index_t, value_t>;
 
@@ -55,7 +55,8 @@ void BptTest() {
 
   int optcnt;
   int value;
-  std::string opt, index;
+  std::string opt;
+  index_t index;
   std::cin >> optcnt;
   for(int i = 1; i <= optcnt; ++i) {
     std::cin >> opt;
@@ -81,7 +82,7 @@ void SaferBptTest() {
 }
 
 void MultitaskBptTest() {
-  using index_t = insomnia::array<char, 65>;
+  using index_t = insomnia::array<char, 64>;
   using value_t = int;
   using MulBpt_t = insomnia::MultiBpt<index_t, value_t>;
 
