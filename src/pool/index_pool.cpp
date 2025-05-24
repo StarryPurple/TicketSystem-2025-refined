@@ -56,4 +56,13 @@ void IndexPool::save() {
   ++size;
 }
 
+void IndexPool::clear() {
+  fstream_.close();
+  std::filesystem::resize_file(path_, 0);
+  fstream_.open(path_, std::ios::binary | std::ios::in | std::ios::out);
+  unallocated_.clear();
+  max_index_ = NULL_INDEX;
+}
+
+
 }

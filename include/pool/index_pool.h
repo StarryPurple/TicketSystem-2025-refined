@@ -17,6 +17,7 @@ public:
   index_t alloc();
   void dealloc(index_t index); // no solid validness check here.
   index_t max_index() const { return max_index_; }
+  void clear();
 private:
   void load();
   void save();

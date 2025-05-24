@@ -72,6 +72,7 @@ public:
   bool read_meta(Meta *data) requires (!EmptyMeta<Meta>); // returns false if read failed.
   page_id_t alloc() { return index_allocator_.alloc(); }
   void dealloc(page_id_t page_id) { index_allocator_.dealloc(page_id); }
+  void clear();
 private:
   void reserve(size_t required_size);
   IndexPool index_allocator_;

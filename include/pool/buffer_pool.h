@@ -188,6 +188,7 @@ public:
         flush_frame(frames_[i]);
   }
 
+  void clear();
 
 private:
 

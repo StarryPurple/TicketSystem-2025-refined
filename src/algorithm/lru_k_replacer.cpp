@@ -120,4 +120,13 @@ bool LruKReplacer::unpin(access_id_t access_id) {
   return false;
 }
 
+void LruKReplacer::clear() {
+  size_ = 0;
+  time_ = 0;
+  for(auto &slot : slots_)
+    slot.reset();
+  l0_set_.clear(); l1_set_.clear();
+}
+
+
 }

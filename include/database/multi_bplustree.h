@@ -29,6 +29,8 @@ public:
 
   bool remove(const KeyT &key, const ValueT &value);
 
+  void clear();
+
 private:
 
   bool key_equal(const KeyT &k1, const KeyT &k2) const {

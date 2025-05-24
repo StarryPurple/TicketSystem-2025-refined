@@ -285,7 +285,11 @@ bool MultiBpt<KeyT, ValueT, KeyCompare, ValueCompare>::remove(const KeyT &key, c
   return true;
 }
 
-
+template <class KeyT, class ValueT, class KeyCompare, class ValueCompare>
+void MultiBpt<KeyT, ValueT, KeyCompare, ValueCompare>::clear() {
+  buf_pool_.clear();
+  root_ptr_ = NULL_PAGE_ID;
+}
 
 
 }

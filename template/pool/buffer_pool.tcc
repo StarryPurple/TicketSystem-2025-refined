@@ -58,6 +58,20 @@ typename BufferPool<T, Meta, max_size>::Visitor BufferPool<T, Meta, max_size>::v
   return Visitor(&frames_[frame_id], &fs_, &replacer_);
 }
 
+template <class T, class Meta, size_t max_size> requires (max_size >= sizeof(T))
+void BufferPool<T, Meta, max_size>::clear() {
+  fs_.clear();
+  usage_map_.clear();
+  frames_.clear();
+  free_frames_.clear();
+  for(frame_id_t i = 0; i < frame_count_; ++i) {
+    frames_.push_back(Frame(i));
+    free_frames_.push_back(i);
+  }
+  replacer_.clear();
+}
+
+
 }
 
 #endif

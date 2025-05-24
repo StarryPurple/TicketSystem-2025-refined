@@ -60,6 +60,7 @@ public:
   bool remove(access_id_t access_id);
   bool pin(access_id_t access_id);    // returns false if access id not in replacer.
   bool unpin(access_id_t access_id);  // returns false if access id not in replacer.
+  void clear();
 private:
   const access_id_t capacity_;
   const int k_;

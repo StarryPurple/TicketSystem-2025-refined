@@ -85,6 +85,16 @@ void fstream<T, Meta>::reserve(size_t required_size) {
   file_size_ = required_size;
 }
 
+template <class T, class Meta> requires FstreamConcept<T, Meta>
+void fstream<T, Meta>::clear() {
+  index_allocator_.clear();
+  fstream_.close();
+  std::filesystem::resize_file(path_, 0);
+  fstream_.open(path_, std::ios::binary | std::ios::in | std::ios::out);
+  file_size_ = 0;
+}
+
+
 }
 
 #endif
