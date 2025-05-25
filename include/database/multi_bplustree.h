@@ -2,16 +2,16 @@
 #define INSOMNIA_MULTI_BPLUSTREE_H
 
 #include "buffer_pool.h"
-#include "multi_bplustree_nodes.h"
+#include "bplustree_nodes.h"
 
 namespace insomnia {
 
 template <class KeyT, class ValueT, class KeyCompare = std::less<KeyT>, class ValueCompare = std::less<ValueT>>
 class MultiBpt {
 
-  using Base = MultiBptNodeBase;
+  using Base = BptNodeBase;
   using Internal = MultiBptInternal<KeyT, ValueT>;
-  using Leaf = MultiBptLeaf<KeyT, ValueT>;
+  using Leaf = BptLeaf<KeyT, ValueT>;
   using BufferType = BufferPool<Base, page_id_t, std::max(sizeof(Internal), sizeof(Leaf))>;
   using Visitor = typename BufferType::Visitor;
 
