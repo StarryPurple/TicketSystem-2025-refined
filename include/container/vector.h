@@ -7,6 +7,10 @@ namespace insomnia {
 template <class T>
 class vector {
 public:
+
+  using value_type = T;
+
+
   class const_iterator;
   class iterator {
     friend const_iterator;
@@ -58,6 +62,26 @@ public:
     }
     bool operator!=(const const_iterator &other) const {
       return _container != other._container || _ptr != other._ptr;
+    }
+    bool operator<(const iterator &other) const {
+      if(_container != other._container || _container == nullptr)
+        throw invalid_iterator();
+      return _ptr < other._ptr;
+    }
+    bool operator<(const const_iterator &other) const {
+      if(_container != other._container || _container == nullptr)
+        throw invalid_iterator();
+      return _ptr < other._ptr;
+    }
+    bool operator>(const iterator &other) const {
+      if(_container != other._container || _container == nullptr)
+        throw invalid_iterator();
+      return _ptr > other._ptr;
+    }
+    bool operator>(const const_iterator &other) const {
+      if(_container != other._container || _container == nullptr)
+        throw invalid_iterator();
+      return _ptr > other._ptr;
     }
   private:
     const vector *_container;
@@ -116,14 +140,35 @@ public:
     bool operator!=(const const_iterator &other) const {
       return _container != other._container || _ptr != other._ptr;
     }
+    bool operator<(const iterator &other) const {
+      if(_container != other._container || _container == nullptr)
+        throw invalid_iterator();
+      return _ptr < other._ptr;
+    }
+    bool operator<(const const_iterator &other) const {
+      if(_container != other._container || _container == nullptr)
+        throw invalid_iterator();
+      return _ptr < other._ptr;
+    }
+    bool operator>(const iterator &other) const {
+      if(_container != other._container || _container == nullptr)
+        throw invalid_iterator();
+      return _ptr > other._ptr;
+    }
+    bool operator>(const const_iterator &other) const {
+      if(_container != other._container || _container == nullptr)
+        throw invalid_iterator();
+      return _ptr > other._ptr;
+    }
   private:
     const vector *_container;
     T* _ptr;
     const_iterator(const vector *container, T *ptr): _container(container), _ptr(ptr) {}
   };
   vector();
-  explicit vector(size_t size) requires std::is_default_constructible_v<T>;
-  vector(size_t size, const T &t) requires std::is_copy_constructible_v<T>;
+  explicit vector(size_t size);
+  vector(size_t size, const T &t);
+  vector(std::initializer_list<T> lst);
   vector(const vector &other);
   vector(vector &&other);
   ~vector();

@@ -1,7 +1,6 @@
 #ifndef INSOMNIA_PRIORITY_QUEUE_H
 #define INSOMNIA_PRIORITY_QUEUE_H
 
-#include <functional>
 #include <cmath>
 
 namespace insomnia {

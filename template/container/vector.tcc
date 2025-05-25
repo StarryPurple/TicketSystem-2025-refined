@@ -14,7 +14,7 @@ vector<T>::vector() {
 }
 
 template <class T>
-vector<T>::vector(size_t size) requires std::is_default_constructible_v<T> {
+vector<T>::vector(size_t size) {
   size_t capacity = std::max(size * 2, 16ul);
   _beg = static_cast<T*>(::operator new (capacity * sizeof(T)));
   _end = _beg + size;
@@ -24,13 +24,23 @@ vector<T>::vector(size_t size) requires std::is_default_constructible_v<T> {
 }
 
 template <class T>
-vector<T>::vector(size_t size, const T &t) requires std::is_copy_constructible_v<T> {
+vector<T>::vector(size_t size, const T &t) {
   size_t capacity = std::max(size * 2, 16ul);
   _beg = static_cast<T*>(operator new (capacity * sizeof(T)));
   _end = _beg + size;
   _lim = _beg + capacity;
   for(T *ptr = _beg; ptr != _end; ++ptr)
     new (ptr) T(t);
+}
+
+template <class T>
+vector<T>::vector(std::initializer_list<T> lst) {
+  _beg = static_cast<T*>(operator new (lst.size() * sizeof(T)));
+  _end = _beg + lst.size();
+  _lim = _end;
+  T *ptr = _beg;
+  for(const auto &elem : lst)
+    new (ptr++) T(elem);
 }
 
 

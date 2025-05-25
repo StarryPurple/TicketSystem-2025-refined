@@ -4,6 +4,7 @@
 
 #include "vector.h"
 #include "array.h"
+#include "algorithm.h"
 #include "multi_bplustree.h"
 #include "bplustree.h"
 
@@ -91,13 +92,13 @@ void MultitaskMultiBptTest() {
   int buffer_capacity = 512;
 
   auto subtest_dir = std::filesystem::current_path() / "subtest";
-  std::vector<std::filesystem::path> input_files;
+  insomnia::vector<std::filesystem::path> input_files;
   for(auto &entry : std::filesystem::directory_iterator(subtest_dir))
     if(entry.path().extension() == ".in") {
       input_files.push_back(entry.path());
     }
 
-  std::sort(input_files.begin(), input_files.end());
+  insomnia::sort(input_files.begin(), input_files.end());
   for(auto &input_file : input_files) {
     auto output_file = input_file;
     output_file.replace_extension(".out");
@@ -147,13 +148,13 @@ void MultitaskBptTest() {
   int buffer_capacity = 512;
 
   auto subtest_dir = std::filesystem::current_path() / "subtest";
-  std::vector<std::filesystem::path> input_files;
+  insomnia::vector<std::filesystem::path> input_files;
   for(auto &entry : std::filesystem::directory_iterator(subtest_dir))
     if(entry.path().extension() == ".in") {
       input_files.push_back(entry.path());
     }
 
-  std::sort(input_files.begin(), input_files.end());
+  insomnia::sort(input_files.begin(), input_files.end());
   for(auto &input_file : input_files) {
     auto output_file = input_file;
     output_file.replace_extension(".out");
@@ -188,6 +189,9 @@ void MultitaskBptTest() {
 }
 
 int main() {
-  MultitaskBptTest();
+  insomnia::vector<int> a;
+  for(int i = 1000; i >= 1; --i) a.push_back(i);
+  insomnia::sort(a.begin(), a.end());
+  for(const auto &elem : a) std::cout << elem << ' ';
   return 0;
 }
