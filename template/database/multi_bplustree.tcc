@@ -51,6 +51,7 @@ vector<ValueT> MultiBpt<KeyT, ValueT, KeyCompare, ValueCompare>::search(const Ke
   }
 }
 
+/*
 template <class KeyT, class ValueT, class KeyCompare, class ValueCompare>
 vector<ValueT> MultiBpt<KeyT, ValueT, KeyCompare, ValueCompare>::slow_search(const KeyT &key) {
   if(root_ptr_ == NULL_PAGE_ID)
@@ -82,6 +83,7 @@ vector<ValueT> MultiBpt<KeyT, ValueT, KeyCompare, ValueCompare>::slow_search(con
     ++pos;
   }
 }
+*/
 
 
 template <class KeyT, class ValueT, class KeyCompare, class ValueCompare>

@@ -5,6 +5,7 @@
 #include "vector.h"
 #include "array.h"
 #include "multi_bplustree.h"
+#include "bplustree.h"
 
 uint64_t hash1(const std::string &str) {
   uint64_t hash = 2166136261;
@@ -14,14 +15,12 @@ uint64_t hash1(const std::string &str) {
   }
   return hash;
 }
-
 uint64_t hash2(const std::string &str) {
   uint64_t hash = 5371;
   for(const auto &c : str)
     hash = (hash << 5) + hash + c;
   return hash;
 }
-
 uint64_t hash3(const std::string &str) {
   uint64_t hash = 0xCBF29CE484222325ULL;
   for (const auto &c : str) {
@@ -30,7 +29,6 @@ uint64_t hash3(const std::string &str) {
   }
   return hash ^ (hash >> 32);
 }
-
 void print_list(insomnia::vector<int> &&list) {
   if(list.empty())
     std::cout << "null";
@@ -41,8 +39,7 @@ void print_list(insomnia::vector<int> &&list) {
   std::cout << '\n';
 }
 
-
-void BptTest() {
+void MultiBptTest() {
   using str_t = insomnia::array<char, 64>;
   using index_t = uint64_t;
   using value_t = int;
@@ -74,16 +71,14 @@ void BptTest() {
     }
   }
 }
-
-void SaferBptTest() {
+void SaferMultiBptTest() {
   try {
-    BptTest();
+    MultiBptTest();
   } catch(...) {
     std::cout << "err";
   }
 }
-
-void MultitaskBptTest() {
+void MultitaskMultiBptTest() {
   using index_t = insomnia::array<char, 64>;
   using value_t = int;
   using MulBpt_t = insomnia::MultiBpt<index_t, value_t>;
@@ -140,6 +135,6 @@ void MultitaskBptTest() {
 }
 
 int main() {
-  BptTest();
+  MultiBptTest();
   return 0;
 }
