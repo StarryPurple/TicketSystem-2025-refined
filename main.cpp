@@ -134,7 +134,60 @@ void MultitaskMultiBptTest() {
   }
 }
 
+void MultitaskBptTest() {
+  using index_t = insomnia::array<char, 64>;
+  using value_t = int;
+  using Bpt_t = insomnia::Bplustree<index_t, value_t>;
+
+  auto data_dir = std::filesystem::current_path() / "data";
+  std::filesystem::remove_all(data_dir);
+  std::filesystem::create_directory(data_dir);
+  auto name_base = data_dir / "test";
+  int replacer_k_arg = 4;
+  int buffer_capacity = 512;
+
+  auto subtest_dir = std::filesystem::current_path() / "subtest";
+  std::vector<std::filesystem::path> input_files;
+  for(auto &entry : std::filesystem::directory_iterator(subtest_dir))
+    if(entry.path().extension() == ".in") {
+      input_files.push_back(entry.path());
+    }
+
+  std::sort(input_files.begin(), input_files.end());
+  for(auto &input_file : input_files) {
+    auto output_file = input_file;
+    output_file.replace_extension(".out");
+
+    std::ifstream fin(input_file);
+    std::ofstream fout(output_file);
+    Bpt_t mul_bpt(name_base, buffer_capacity, replacer_k_arg);
+
+    int optcnt;
+    int value;
+    std::string opt, index;
+    fin >> optcnt;
+    for(int i = 1; i <= optcnt; ++i) {
+      fin >> opt;
+      if(opt[0] == 'i') {
+        fin >> index >> value;
+        mul_bpt.insert(index, value);
+      } else if(opt[0] == 'f') {
+        fin >> index;
+        auto res = mul_bpt.search(index);
+        if(!res.has_value()) fout << "null";
+        else fout << *res;
+        fout << std::endl;
+      } else if(opt[0] == 'd') {
+        fin >> index;
+        mul_bpt.remove(index);
+      }
+    }
+    fin.close();
+    fout.close();
+  }
+}
+
 int main() {
-  MultiBptTest();
+  MultitaskBptTest();
   return 0;
 }

@@ -28,10 +28,23 @@ public:
 
   bool insert(const KeyT &key, const ValueT &value);
 
-  bool remove(const KeyT &key, const ValueT &value);
+  bool remove(const KeyT &key);
 
   void clear();
 
+private:
+
+  bool key_equal(const KeyT &k1, const KeyT &k2) const {
+    return !key_compare_(k1, k2) && !key_compare_(k2, k1);
+  }
+
+  bool value_equal(const ValueT &v1, const ValueT &v2) const {
+    return !value_compare_(v1, v2) && !value_compare_(v2, v1);
+  }
+
+  BufferType buf_pool_;
+  page_id_t root_ptr_;
+  KeyCompare key_compare_;
 };
 
 }

@@ -10,8 +10,8 @@ template <class KeyT, class ValueT, class KeyCompare = std::less<KeyT>, class Va
 class MultiBpt {
 
   using Base = BptNodeBase;
-  using Internal = MultiBptInternal<KeyT, ValueT>;
-  using Leaf = BptLeaf<KeyT, ValueT>;
+  using Internal = MultiBptInternalNode<KeyT, ValueT>;
+  using Leaf = BptLeafNode<KeyT, ValueT>;
   using BufferType = BufferPool<Base, page_id_t, std::max(sizeof(Internal), sizeof(Leaf))>;
   using Visitor = typename BufferType::Visitor;
 

@@ -32,7 +32,7 @@ protected:
 };
 
 template <class KeyT, class ValueT>
-class MultiBptInternal : public BptNodeBase {
+class MultiBptInternalNode : public BptNodeBase {
   struct Storage {
     KeyT key;
     ValueT value;
@@ -58,15 +58,15 @@ public:
 
   void update(int pos, const KeyT &key, const ValueT &value);
 
-  void split(MultiBptInternal *rht);
+  void split(MultiBptInternalNode *rht);
 
-  void coalesce(MultiBptInternal *rht);
+  void coalesce(MultiBptInternalNode *rht);
 
   // lft->size < this->size
-  void redistribute_left(MultiBptInternal *lft);
+  void redistribute_left(MultiBptInternalNode *lft);
 
   // rht->size < this->size
-  void redistribute_right(MultiBptInternal *rht);
+  void redistribute_right(MultiBptInternalNode *rht);
 
   const KeyT& key(int pos) const { return storage_[pos].key; }
   const ValueT& value(int pos) const { return storage_[pos].value; }
@@ -77,7 +77,7 @@ private:
 };
 
 template <class KeyT, class ValueT>
-class BptLeaf : public BptNodeBase {
+class BptLeafNode : public BptNodeBase {
   struct Storage {
     KeyT key;
     ValueT value;
@@ -92,6 +92,7 @@ public:
   template <class KVCompare>
   int locate_pair(const KeyT &key, const ValueT &value, KVCompare kv_compare) const;
 
+  // returns size() if key too large.
   template <class KeyCompare>
   int locate_key(const KeyT &key, KeyCompare key_compare) const;
 
@@ -99,15 +100,15 @@ public:
 
   void remove(int pos);
 
-  void split(BptLeaf *rht, page_id_t rht_ptr);
+  void split(BptLeafNode *rht, page_id_t rht_ptr);
 
-  void coalesce(BptLeaf *rht);
+  void coalesce(BptLeafNode *rht);
 
   // lft->size < this->size
-  void redistribute_left(BptLeaf *lft);
+  void redistribute_left(BptLeafNode *lft);
 
   // rht->size < this->size
-  void redistribute_right(BptLeaf *rht);
+  void redistribute_right(BptLeafNode *rht);
 
   const KeyT& key(int pos) const { return storage_[pos].key; }
   const ValueT& value(int pos) const { return storage_[pos].value; }
@@ -116,6 +117,48 @@ public:
 private:
   Storage storage_[CAPACITY];
   page_id_t rht_ptr_ {};
+};
+
+template <class KeyT>
+class BptInternalNode : public BptNodeBase {
+
+  struct Storage {
+    KeyT key;
+    page_id_t child;
+  };
+
+  static constexpr int CAPACITY = std::max(8ul,
+    SectorAlignedSize(sizeof(Storage)) / sizeof(Storage));
+
+public:
+
+  void init(int max_size = CAPACITY - 1);
+
+  // returns size() if key too large.
+  template <class KeyCompare>
+  int locate_key(const KeyT &key, KeyCompare key_compare) const;
+
+  void insert(int pos, const KeyT &key, page_id_t child);
+
+  void remove(int pos);
+
+  void update(int pos, const KeyT &key);
+
+  void split(BptInternalNode *rht);
+
+  void coalesce(BptInternalNode *rht);
+
+  // lft->size < this->size
+  void redistribute_left(BptInternalNode *lft);
+
+  // rht->size < this->size
+  void redistribute_right(BptInternalNode *rht);
+
+  const KeyT& key(int pos) const { return storage_[pos].key; }
+  page_id_t child(int pos) const { return storage_[pos].child; }
+
+private:
+  Storage storage_[CAPACITY];
 };
 
 }
