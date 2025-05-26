@@ -1,12 +1,13 @@
 #include <iostream>
 #include <filesystem>
-#include <mutex>
 
 #include "vector.h"
 #include "array.h"
 #include "algorithm.h"
 #include "multi_bplustree.h"
 #include "bplustree.h"
+
+#include "ts_types.h"
 
 uint64_t hash1(const std::string &str) {
   uint64_t hash = 2166136261;
@@ -191,7 +192,7 @@ void MultitaskBptTest() {
 int main() {
   insomnia::vector<int> a;
   for(int i = 1000; i >= 1; --i) a.push_back(i);
-  insomnia::sort(a.begin(), a.end());
+  insomnia::sort(a.begin(), a.end(), [](int a, int b) { return a > b; });
   for(const auto &elem : a) std::cout << elem << ' ';
   return 0;
 }
