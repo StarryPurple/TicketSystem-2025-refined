@@ -1,3 +1,4 @@
+// Yes, so many constexpr... I'm getting used to it.
 #ifndef TICKETSYSTEM_TS_TIME_H
 #define TICKETSYSTEM_TS_TIME_H
 
@@ -17,24 +18,40 @@ class minutes {
 private:
   minutes_count_t minute_;
 
-  // normalize minute into [0, 1440).
-  void normalize();
-
 public:
-  static minutes one_day() { return minutes(MINUTES_PER_DAY); }
+  static constexpr minutes one_day() { return minutes(MINUTES_PER_DAY); }
 
-  minutes() : minute_(0) {}
-  explicit minutes(minutes_count_t minute) : minute_(minute) { normalize(); }
+  // definitions of constexpr functions must be exposed to callers.
+  // normalize minute count into [0, MINUTES_PER_DAY).
+  constexpr minutes& day_normalize() {
+    minute_ %= MINUTES_PER_DAY;
+    if(minute_ < 0)
+      minute_ += MINUTES_PER_DAY;
+    return *this;
+  }
+
+  constexpr minutes() : minute_(0) {}
+  explicit constexpr minutes(minutes_count_t minute) : minute_(minute) {}
 
 
-  [[nodiscard]] minutes_count_t count() const { return minute_; }
+  [[nodiscard]] constexpr minutes_count_t count() const { return minute_; }
 
-  minutes operator+(const minutes &other) const;
-  minutes operator-(const minutes &other) const;
-  minutes& operator+=(const minutes &other);
-  minutes& operator-=(const minutes &other);
+  constexpr minutes operator+(const minutes &other) const {
+    return minutes(minute_ + other.minute_);
+  }
+  constexpr minutes operator-(const minutes &other) const {
+    return minutes(minute_ - other.minute_);
+  }
+  constexpr minutes& operator+=(const minutes &other) {
+    minute_ += other.minute_;
+    return *this;
+  }
+  constexpr minutes& operator-=(const minutes &other) {
+    minute_ -= other.minute_;
+    return *this;
+  }
 
-  auto operator<=>(const minutes &) const = default;
+  constexpr auto operator<=>(const minutes &) const = default;
 };
 
 constexpr minutes operator"" _min(unsigned long long val) { return minutes(static_cast<minutes_count_t>(val)); }
@@ -45,28 +62,28 @@ private:
   days_count_t day_;
 
 public:
-  days() : day_(0) {}
-  explicit days(days_count_t day) : day_(day) {}
+  constexpr days() : day_(0) {}
+  explicit constexpr days(days_count_t day) : day_(day) {}
   // days(minutes minute) : day_(minute.minute_ / 1440) {}
 
-  [[nodiscard]] days_count_t count() const { return day_; }
+  [[nodiscard]] constexpr days_count_t count() const { return day_; }
 
-  days operator+(const days &other) const {
+  constexpr days operator+(const days &other) const {
     return days(day_ + other.day_);
   }
-  days operator-(const days &other) const {
+  constexpr days operator-(const days &other) const {
     return days(day_ - other.day_);
   }
-  days& operator+=(const days &other) {
+  constexpr days& operator+=(const days &other) {
     day_ += other.day_;
     return *this;
   }
-  days& operator-=(const days &other) {
+  constexpr days& operator-=(const days &other) {
     day_ -= other.day_;
     return *this;
   }
 
-  auto operator<=>(const days &) const = default;
+  constexpr auto operator<=>(const days &) const = default;
 };
 
 constexpr days operator"" _day(unsigned long long val) { return days(static_cast<days_count_t>(val)); }
@@ -78,20 +95,20 @@ private:
 public:
   static std::string default_string() { return "xx:xx"; }
 
-  TimeHM() = default;
-  explicit TimeHM(minutes minute) : minute_(minute) {}
-  explicit TimeHM(const std::string &str)
+  constexpr TimeHM() = default;
+  explicit constexpr TimeHM(minutes minute) : minute_(minute.day_normalize()) {}
+  explicit constexpr TimeHM(std::string_view str)
   : minute_(60 * (10 * (str[0] - '0') + (str[1] - '0'))
                + (10 * (str[3] - '0') + (str[4] - '0'))) {}
-  TimeHM& operator=(const std::string &str) {
+  TimeHM& operator=(std::string_view str) {
     minute_ = minutes(60 * (10 * (str[0] - '0') + (str[1] - '0'))
                          + (10 * (str[3] - '0') + (str[4] - '0')));
     return *this;
   }
-  // TimeHM& operator=(const TimeHM &) = default;
+  // TimeHM& operator=(const TimeHM &) = default; Why isn't this line needed?
 
-  [[nodiscard]] minutes minute() const { return minute_; }
-  [[nodiscard]] minutes_count_t count() const { return minute_.count(); }
+  [[nodiscard]] constexpr minutes minute() const { return minute_; }
+  [[nodiscard]] constexpr minutes_count_t count() const { return minute_.count(); }
   [[nodiscard]] std::string string() const;
 
   TimeHM operator+(minutes minutes) const {
@@ -109,32 +126,32 @@ public:
     return *this;
   }
 
-  auto operator<=>(const TimeHM &) const = default;
+  constexpr auto operator<=>(const TimeHM &) const = default;
 };
 
 class DateMD {
 private:
-  static constexpr days DAY0701{30}, DAY0801{61};
+  static constexpr days DAY0701{30}, DAY0801{61}; //...
 
   days day_;
 
 public:
   static std::string default_string() { return "xx-xx"; }
-  DateMD() = default;
-  explicit DateMD(days day) : day_(day) {}
-  explicit DateMD(const std::string &str) {
+  constexpr DateMD() = default;
+  explicit constexpr DateMD(days day) : day_(day) {}
+  explicit constexpr DateMD(std::string_view str) {
     day_ = days(10 * (str[3] - '0') + (str[4] - '0') - 1);
     if(str[1] == '7')      day_ += DAY0701;
     else if(str[1] == '8') day_ += DAY0801;
   }
-  DateMD& operator=(const std::string &str) {
+  DateMD& operator=(std::string_view str) {
     day_ = days(10 * (str[3] - '0') + (str[4] - '0') - 1);
     if(str[1] == '7')      day_ += DAY0701;
     else if(str[1] == '8') day_ += DAY0801;
     return *this;
   }
-  [[nodiscard]] days_count_t count() const { return day_.count(); }
-  [[nodiscard]] days day() const { return day_; }
+  [[nodiscard]] constexpr days_count_t count() const { return day_.count(); }
+  [[nodiscard]] constexpr days day() const { return day_; }
   [[nodiscard]] std::string string() const;
 
   DateMD operator+(days days) const {
@@ -152,10 +169,11 @@ public:
     return *this;
   }
 
-  auto operator<=>(const DateMD &) const = default;
+  constexpr auto operator<=>(const DateMD &) const = default;
 };
 
 class DateTime {
+  // don't change the order of the member variables. needed in operator<=>.
 private:
   DateMD date_md_;
   TimeHM time_hm_;
@@ -166,14 +184,14 @@ public:
     return DateMD::default_string() + " " + TimeHM::default_string();
   }
 
-  DateTime() = default;
-  DateTime(DateMD date_md, TimeHM time_hm) : date_md_(date_md), time_hm_(time_hm) {}
+  constexpr DateTime() = default;
+  constexpr DateTime(DateMD date_md, TimeHM time_hm) : date_md_(date_md), time_hm_(time_hm) {}
 
-  [[nodiscard]] minutes_count_t count() const {
+  [[nodiscard]] constexpr minutes_count_t count() const {
     return MINUTES_PER_DAY * date_md_.count() + time_hm_.count();
   }
-  [[nodiscard]] TimeHM time_hm() const { return time_hm_; }
-  [[nodiscard]] DateMD date_md() const { return date_md_; }
+  [[nodiscard]] constexpr TimeHM time_hm() const { return time_hm_; }
+  [[nodiscard]] constexpr DateMD date_md() const { return date_md_; }
   [[nodiscard]] std::string string() const {
     return date_md_.string() + " " + time_hm_.string();
   }
@@ -182,6 +200,9 @@ public:
   DateTime operator-(minutes minute) const;
   DateTime& operator+=(minutes minute);
   DateTime& operator-=(minutes minute);
+
+  // date_md_ is in front of time_hm_.
+  constexpr auto operator<=>(const DateTime &) const = default;
 };
 
 }

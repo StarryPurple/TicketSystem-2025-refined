@@ -8,6 +8,7 @@
 #include "bplustree.h"
 
 #include "ts_types.h"
+#include "ts_time.h"
 
 uint64_t hash1(const std::string &str) {
   uint64_t hash = 2166136261;
@@ -41,14 +42,17 @@ void print_list(insomnia::vector<int> &&list) {
   std::cout << '\n';
 }
 
+namespace ism = insomnia;
+namespace fs = std::filesystem;
+
 void MultiBptTest() {
-  using str_t = insomnia::array<char, 64>;
+  using str_t = ism::array<char, 64>;
   using index_t = uint64_t;
   using value_t = int;
-  using MulBpt_t = insomnia::MultiBpt<index_t, value_t>;
+  using MulBpt_t = ism::MultiBpt<index_t, value_t>;
 
-  auto dir = std::filesystem::current_path() / "data";
-  std::filesystem::create_directory(dir);
+  auto dir = fs::current_path() / "data";
+  fs::create_directory(dir);
   auto name_base = dir / "test";
   int replacer_k_arg = 4;
   int buffer_capacity = 1536;
@@ -81,20 +85,20 @@ void SaferMultiBptTest() {
   }
 }
 void MultitaskMultiBptTest() {
-  using index_t = insomnia::array<char, 64>;
+  using index_t = ism::array<char, 64>;
   using value_t = int;
-  using MulBpt_t = insomnia::MultiBpt<index_t, value_t>;
+  using MulBpt_t = ism::MultiBpt<index_t, value_t>;
 
-  auto data_dir = std::filesystem::current_path() / "data";
-  std::filesystem::remove_all(data_dir);
-  std::filesystem::create_directory(data_dir);
+  auto data_dir = fs::current_path() / "data";
+  fs::remove_all(data_dir);
+  fs::create_directory(data_dir);
   auto name_base = data_dir / "test";
   int replacer_k_arg = 4;
   int buffer_capacity = 512;
 
-  auto subtest_dir = std::filesystem::current_path() / "subtest";
-  insomnia::vector<std::filesystem::path> input_files;
-  for(auto &entry : std::filesystem::directory_iterator(subtest_dir))
+  auto subtest_dir = fs::current_path() / "subtest";
+  ism::vector<fs::path> input_files;
+  for(auto &entry : fs::directory_iterator(subtest_dir))
     if(entry.path().extension() == ".in") {
       input_files.push_back(entry.path());
     }
@@ -137,25 +141,25 @@ void MultitaskMultiBptTest() {
 }
 
 void MultitaskBptTest() {
-  using index_t = insomnia::array<char, 64>;
+  using index_t = ism::array<char, 64>;
   using value_t = int;
-  using Bpt_t = insomnia::Bplustree<index_t, value_t>;
+  using Bpt_t = ism::Bplustree<index_t, value_t>;
 
-  auto data_dir = std::filesystem::current_path() / "data";
-  std::filesystem::remove_all(data_dir);
-  std::filesystem::create_directory(data_dir);
+  auto data_dir = fs::current_path() / "data";
+  fs::remove_all(data_dir);
+  fs::create_directory(data_dir);
   auto name_base = data_dir / "test";
   int replacer_k_arg = 4;
   int buffer_capacity = 512;
 
-  auto subtest_dir = std::filesystem::current_path() / "subtest";
-  insomnia::vector<std::filesystem::path> input_files;
-  for(auto &entry : std::filesystem::directory_iterator(subtest_dir))
+  auto subtest_dir = fs::current_path() / "subtest";
+  ism::vector<fs::path> input_files;
+  for(auto &entry : fs::directory_iterator(subtest_dir))
     if(entry.path().extension() == ".in") {
       input_files.push_back(entry.path());
     }
 
-  insomnia::sort(input_files.begin(), input_files.end());
+  ism::sort(input_files.begin(), input_files.end());
   for(auto &input_file : input_files) {
     auto output_file = input_file;
     output_file.replace_extension(".out");
@@ -189,10 +193,11 @@ void MultitaskBptTest() {
   }
 }
 
+namespace ts = ticket_system;
+
 int main() {
-  insomnia::vector<int> a;
-  for(int i = 1000; i >= 1; --i) a.push_back(i);
-  insomnia::sort(a.begin(), a.end(), [](int a, int b) { return a > b; });
-  for(const auto &elem : a) std::cout << elem << ' ';
+  constexpr ts::DateTime date_time1(ts::DateMD("07-01"), ts::TimeHM("05:30"));
+  constexpr ts::DateTime date_time2(ts::DateMD("06-30"), ts::TimeHM("23:30"));
+  static_assert(date_time1 > date_time2);
   return 0;
 }
