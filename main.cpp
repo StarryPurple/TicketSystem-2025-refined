@@ -9,23 +9,24 @@
 
 #include "ts_types.h"
 #include "ts_time.h"
+#include "ticketsystem.h"
 
-uint64_t hash1(const std::string &str) {
-  uint64_t hash = 2166136261;
+u_int64_t hash1(const std::string &str) {
+  u_int64_t hash = 2166136261;
   for(const auto &c : str) {
     hash ^= c;
     hash *= 16777619;
   }
   return hash;
 }
-uint64_t hash2(const std::string &str) {
-  uint64_t hash = 5371;
+u_int64_t hash2(const std::string &str) {
+  u_int64_t hash = 5371;
   for(const auto &c : str)
     hash = (hash << 5) + hash + c;
   return hash;
 }
-uint64_t hash3(const std::string &str) {
-  uint64_t hash = 0xCBF29CE484222325ULL;
+u_int64_t hash3(const std::string &str) {
+  u_int64_t hash = 0xCBF29CE484222325ULL;
   for (const auto &c : str) {
     hash ^= static_cast<uint64_t>(c);
     hash *= 0x100000001B3ULL;
@@ -47,7 +48,7 @@ namespace fs = std::filesystem;
 
 void MultiBptTest() {
   using str_t = ism::array<char, 64>;
-  using index_t = uint64_t;
+  using index_t = u_int64_t;
   using value_t = int;
   using MulBpt_t = ism::MultiBpt<index_t, value_t>;
 
@@ -196,8 +197,7 @@ void MultitaskBptTest() {
 namespace ts = ticket_system;
 
 int main() {
-  constexpr ts::DateTime date_time1(ts::DateMD("07-01"), ts::TimeHM("05:30"));
-  constexpr ts::DateTime date_time2(ts::DateMD("06-30"), ts::TimeHM("23:30"));
-  static_assert(date_time1 > date_time2);
+  ts::TicketSystem system;
+  system.read();
   return 0;
 }

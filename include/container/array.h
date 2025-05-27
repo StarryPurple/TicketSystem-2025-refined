@@ -20,6 +20,12 @@ public:
     for(size_t i = 0; i < list.size() && i < N; ++i)
       _data[i] = std::move(list[i]);
   }
+  array(const T *data, size_t n) {
+    if(data == nullptr) throw invalid_argument("Data is null.");
+    if(n > N) throw invalid_argument("n too large.");
+    for(size_t i = 0; i < n && i < N; ++i)
+      _data[i] = *(data + i);
+  }
   ~array() = default;
 
   class iterator {
@@ -106,14 +112,22 @@ public:
 
   array() { _data[0] = '\0'; }
   array(const char *str) {
+    if(str == nullptr) throw invalid_argument("Data is null.");
+    if(std::strlen(str) > N) throw invalid_argument("String too long.");
     auto len = std::min(N, std::strlen(str));
     memcpy(_data, str, len);
     _data[len] = '\0';
   }
   array(const std::string &str) {
-    auto len = std::min(N, str.length());
-    memcpy(_data, str.c_str(), len);
-    _data[len] = '\0';
+    if(str.length() > N) throw invalid_argument("String too long.");
+    memcpy(_data, str.c_str(), str.length());
+    _data[str.length()] = '\0';
+  }
+  array(const char *str, size_t n) {
+    if(str == nullptr) throw invalid_argument("Data is null.");
+    if(n > N) throw invalid_argument("n too large.");
+    memset(_data, str, n);
+    _data[n] = '0';
   }
   ~array() = default;
 
@@ -201,8 +215,8 @@ public:
   const char* c_str() const { return _data; }
   std::string str() { return std::string(_data); }
 
-  uint64_t hash() const {
-    uint64_t hash = 5371;
+  u_int64_t hash() const {
+    u_int64_t hash = 5371;
     const char *cur = _data;
     char c;
     while((c = *cur++)) {

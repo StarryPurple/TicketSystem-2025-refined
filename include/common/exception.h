@@ -32,6 +32,11 @@ public:
   explicit index_out_of_bound(const char *detail = "") : container_exception(detail) {}
 };
 
+class invalid_argument : public container_exception {
+public:
+  explicit invalid_argument(const char *detail = "") : container_exception(detail) {}
+};
+
 class disk_exception : public insomnia_exception {
 public:
   explicit disk_exception(const char *detail = "") : insomnia_exception(detail) {}

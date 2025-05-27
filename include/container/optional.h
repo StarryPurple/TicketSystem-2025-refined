@@ -1,6 +1,8 @@
 #ifndef INSOMNIA_OPTIONAL_H
 #define INSOMNIA_OPTIONAL_H
 
+#include "exception.h"
+
 namespace insomnia {
 
 template <class T>
