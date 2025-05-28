@@ -1,6 +1,8 @@
 #ifndef TICKETSYSTEM_TS_TYPES_H
 #define TICKETSYSTEM_TS_TYPES_H
 
+#include <iostream>
+
 #include "pair.h"
 #include "array.h"
 #include "ts_time.h"
@@ -37,6 +39,7 @@ using train_type_t = char;
 
 using order_cnt_t  = int;
 
+/*
 // frequency: SF ~ 1e6, F ~ 1e5, N ~ 1e4, R ~ 1e2
 enum class CommandType {
   Invalid,
@@ -57,6 +60,7 @@ enum class CommandType {
   CLEAN,          // R
   EXIT            // R
 };
+*/
 
 using cmd_time_t = int; // timestamp type
 
@@ -144,6 +148,22 @@ struct CmdRefundTicket {
 };
 // struct CmdClean {};
 // struct CmdExit {};
+
+class Logger {
+
+public:
+
+  void print_log(const char *log) {
+    size_t n = strlen(log);
+    for(size_t i = 0; i < n; ++i)
+      putchar(*(log++));
+  }
+
+  void print_log(const char *log, size_t n) {
+    for(size_t i = 0; i < n; ++i) putchar(*(log++));
+  }
+
+};
 
 }
 

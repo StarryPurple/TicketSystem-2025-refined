@@ -12,7 +12,7 @@ void sort(RAIt begin, RAIt end) {
   sort(begin, end, compare_t());
 }
 
-bool is_digit(char c) { return '0' <= c && c <= '9'; }
+inline bool is_digit(char c) { return '0' <= c && c <= '9'; }
 
 template <class Integer> requires std::is_integral_v<Integer>
 Integer stoi(const std::string &str) {
@@ -39,13 +39,31 @@ Integer stoi(const char *str) {
     sig = false;
     ++str;
   }
-  if(!is_digit(*str)) throw invalid_argument("insomnia stoi");
+  if(!is_digit(*str)) throw invalid_argument("ism::stoi");
   while(is_digit(*str)) {
     t = t * 10 + (*str - '0');
     ++str;
   }
   return sig ? t : -t;
 }
+
+template <class Integer> requires std::is_integral_v<Integer>
+Integer stoi(const char *str, size_t n) {
+  Integer t = 0;
+  bool sig = true;
+  if(*str == '-') {
+    sig = false;
+    ++str;
+    --n;
+  }
+  for(size_t i = 0; i < n; ++i) {
+    if(!is_digit(*str)) throw invalid_argument("ism::stoi");
+    t = t * 10 + (*(str++) - '0');
+  }
+  return sig ? t : -t;
+}
+
+
 
 }
 

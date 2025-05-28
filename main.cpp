@@ -198,6 +198,6 @@ namespace ts = ticket_system;
 
 int main() {
   ts::TicketSystem system;
-  system.read();
+  system.work_loop();
   return 0;
 }
