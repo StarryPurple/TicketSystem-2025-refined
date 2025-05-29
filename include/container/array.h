@@ -126,8 +126,8 @@ public:
   array(const char *str, size_t n) {
     if(str == nullptr) throw invalid_argument("Data is null.");
     if(n > N) throw invalid_argument("n too large.");
-    memset(_data, str, n);
-    _data[n] = '0';
+    memcpy(_data, str, n);
+    _data[n] = '\0';
   }
   ~array() = default;
 

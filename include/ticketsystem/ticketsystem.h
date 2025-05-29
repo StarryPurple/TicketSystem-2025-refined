@@ -47,16 +47,6 @@ class TicketSystem {
   Status status_ = Status::StatGood;
   Logger logger_;
 
-  static void to_token_end(const char *&p, char splitter = ' ') {
-    while(*p != splitter && *p != '\0') ++p;
-  }
-
-  static void to_next_token(const char *&p, char splitter = ' ') {
-    while(*p != splitter && *p != '\0') ++p;
-    while(*p == splitter) ++p;
-  }
-
-
   void AddUser();
   void Login();
   void Logout();

@@ -2,6 +2,7 @@
 #ifndef TICKETSYSTEM_TS_TIME_H
 #define TICKETSYSTEM_TS_TIME_H
 
+#include "exception.h"
 #include <string>
 
 namespace ticket_system {
@@ -19,6 +20,7 @@ private:
   minutes_count_t minute_;
 
 public:
+  using count_t = minutes_count_t;
   static constexpr minutes one_day() { return minutes(MINUTES_PER_DAY); }
 
   // definitions of constexpr functions must be exposed to callers.
@@ -62,6 +64,7 @@ private:
   days_count_t day_;
 
 public:
+  using count_t = days_count_t;
   constexpr days() : day_(0) {}
   explicit constexpr days(days_count_t day) : day_(day) {}
   // days(minutes minute) : day_(minute.minute_ / 1440) {}
@@ -97,14 +100,14 @@ public:
 
   constexpr TimeHM() = default;
   explicit constexpr TimeHM(minutes minute) : minute_(minute.day_normalize()) {}
+  explicit constexpr TimeHM(const char *str, size_t n) {
+    if(n != 5) throw insomnia::invalid_argument("invalid length for a TimeHM string.");
+    minute_ = minutes(60 * (10 * (str[0] - '0') + (str[1] - '0'))
+                         + (10 * (str[3] - '0') + (str[4] - '0')));
+  }
   explicit constexpr TimeHM(std::string_view str)
   : minute_(60 * (10 * (str[0] - '0') + (str[1] - '0'))
                + (10 * (str[3] - '0') + (str[4] - '0'))) {}
-  TimeHM& operator=(std::string_view str) {
-    minute_ = minutes(60 * (10 * (str[0] - '0') + (str[1] - '0'))
-                         + (10 * (str[3] - '0') + (str[4] - '0')));
-    return *this;
-  }
   // TimeHM& operator=(const TimeHM &) = default; Why isn't this line needed?
 
   [[nodiscard]] constexpr minutes minute() const { return minute_; }
@@ -139,16 +142,11 @@ public:
   static std::string default_string() { return "xx-xx"; }
   constexpr DateMD() = default;
   explicit constexpr DateMD(days day) : day_(day) {}
-  explicit constexpr DateMD(std::string_view str) {
+  explicit constexpr DateMD(const char *str, size_t n) {
+    if(n != 5) throw insomnia::invalid_argument("invalid length for a DateMD string.");
     day_ = days(10 * (str[3] - '0') + (str[4] - '0') - 1);
     if(str[1] == '7')      day_ += DAY0701;
     else if(str[1] == '8') day_ += DAY0801;
-  }
-  DateMD& operator=(std::string_view str) {
-    day_ = days(10 * (str[3] - '0') + (str[4] - '0') - 1);
-    if(str[1] == '7')      day_ += DAY0701;
-    else if(str[1] == '8') day_ += DAY0801;
-    return *this;
   }
   [[nodiscard]] constexpr days_count_t count() const { return day_.count(); }
   [[nodiscard]] constexpr days day() const { return day_; }

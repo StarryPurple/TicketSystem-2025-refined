@@ -63,7 +63,30 @@ Integer stoi(const char *str, size_t n) {
   return sig ? t : -t;
 }
 
+// returns whether p has advance to a delimiter
+// before it hits an ending sentinel or '\0'.
+// like : delimiter = "-", str = "abc--de",
+// function will change *p = 'a' to *p = '-' (the first one),
+// and not modify the *p = '-' (the first one).
+// if returns true, it should happen that *p == delimiter.
+// if returns false, *p == sentinel or '\0'.
+inline bool advance_until(const char *&p, char delimiter, char sentinel = '\0') {
+  while(*p != delimiter && *p != sentinel && *p != '\0') ++p;
+  return *p == delimiter;
+}
 
+// returns whether p has skipped (continuous) delimiter(s)
+// before it hits an ending sentinel or '\0'.
+// like : delimiter = "-", str = "abc--de",
+// function will change *p = 'a' to *p = 'd',
+// change *p = '-' (the first one) to *p = 'd'.
+// if returns true, *p != delimiter and *(p - 1) == delimiter.
+// if returns false, *p == sentinel or '\0'.
+inline bool advance_past(const char *&p, char delimiter, char sentinel = '\0') {
+  while(*p != delimiter && *p != sentinel && *p != '\0') ++p;
+  while(*p == delimiter) ++p;
+  return *p != sentinel && *p != '\0';
+}
 
 }
 

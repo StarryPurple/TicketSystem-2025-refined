@@ -26,17 +26,16 @@ TicketSystem::TicketSystem() {
 void TicketSystem::run() {
   std::cin.getline(input_, sizeof(input_));
   if(strlen(input_) == 0) return;
-  token_ = input_; // *token = '['
-  to_token_end(token_); // *token = ' '
+  token_ = input_;                 // *token = '['
+  ism::advance_until(token_, ' '); // *token = ' '
   const char *stmp_beg = input_ + 1;
   const char *stmp_end = token_ - 1;
   timestamp_ = ism::stoi<cmd_time_t>(stmp_beg, stmp_end - stmp_beg);
   logger_.print_log(input_, token_ - input_ + 1);
-  to_next_token(token_); // token = cmd name
+  ism::advance_past(token_, ' ');  // token = cmd name
   const char *cmd_name = token_;
-  to_token_end(token_); // token = param name #1
+  ism::advance_until(token_, ' '); // token = ' ' or '\0'
   size_t cmd_len = token_ - cmd_name;
-  to_next_token(token_);
   if(auto it = command_hashmap_.find(hash(cmd_name, cmd_len));
     it != command_hashmap_.end()) {
     (this->*it->second)();
@@ -44,59 +43,73 @@ void TicketSystem::run() {
 }
 
 void TicketSystem::AddUser() {
-
+  static CmdAddUser cmd;
+  cmd.initialize(input_);
 }
 
 void TicketSystem::Login() {
-
+  static CmdLogin cmd;
+  cmd.initialize(input_);
 }
 
 void TicketSystem::Logout() {
-
+  static CmdLogout cmd;
+  cmd.initialize(input_);
 }
 
 void TicketSystem::QueryProfile() {
-
+  static CmdQueryProfile cmd;
+  cmd.initialize(input_);
 }
 
 void TicketSystem::ModifyProfile() {
-
+  static CmdModifyProfile cmd;
+  cmd.initialize(input_);
 }
 
 void TicketSystem::AddTrain() {
-
+  static CmdAddTrain cmd;
+  cmd.initialize(input_);
 }
 
 void TicketSystem::DeleteTrain() {
-
+  static CmdDeleteTrain cmd;
+  cmd.initialize(input_);
 }
 
 void TicketSystem::ReleaseTrain() {
-
+  static CmdReleaseTrain cmd;
+  cmd.initialize(input_);
 }
 
 void TicketSystem::QueryTrain() {
-
+  static CmdQueryTrain cmd;
+  cmd.initialize(input_);
 }
 
 void TicketSystem::QueryTicket() {
-
+  static CmdQueryTicket cmd;
+  cmd.initialize(input_);
 }
 
 void TicketSystem::QueryTransfer() {
-
+  static CmdQueryTransfer cmd;
+  cmd.initialize(input_);
 }
 
 void TicketSystem::BuyTicket() {
-
+  static CmdBuyTicket cmd;
+  cmd.initialize(input_);
 }
 
 void TicketSystem::QueryOrder() {
-
+  static CmdQueryOrder cmd;
+  cmd.initialize(input_);
 }
 
 void TicketSystem::RefundTicket() {
-
+  static CmdRefundTicket cmd;
+  cmd.initialize(input_);
 }
 
 void TicketSystem::Clean() {
