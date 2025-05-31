@@ -20,23 +20,10 @@ Bplustree<KeyT, ValueT, KeyCompare>::~Bplustree() {
 
 template <class KeyT, class ValueT, class KeyCompare>
 optional<ValueT> Bplustree<KeyT, ValueT, KeyCompare>::search(const KeyT &key) {
-  if(root_ptr_ == NULL_PAGE_ID)
-    return optional<ValueT>();
-  vector<Visitor> visitors;
-  visitors.push_back(buf_pool_.visitor(root_ptr_));
-  while(!visitors.back().template as<Base>()->is_leaf()) {
-    auto node = visitors.back().template as<Internal>();
-    auto pos = node->locate_key(key, key_compare_);
-    auto ptr = node->child(pos);
-    visitors.push_back(buf_pool_.visitor(ptr));
-  }
-  auto visitor = std::move(visitors.back());
-  visitors.pop_back();
-  auto node = visitor.template as<Leaf>();
-  auto pos = node->locate_key(key, key_compare_);
-  if(pos == node->size() || !key_equal(node->key(pos), key))
-    return optional<ValueT>();
-  return make_optional(node->value(pos));
+  auto it = find_upper(key);
+  if(it != end() && key_equal((*it).first, key))
+    return make_optional<ValueT>((*it).second);
+  return optional<ValueT>();
 }
 
 template <class KeyT, class ValueT, class KeyCompare>
@@ -241,6 +228,57 @@ bool Bplustree<KeyT, ValueT, KeyCompare>::remove(const KeyT &key) {
   buf_pool_.dealloc(root_ptr_);
   root_ptr_ = new_root_ptr;
   return true;
+}
+
+template <class KeyT, class ValueT, class KeyCompare>
+typename Bplustree<KeyT, ValueT, KeyCompare>::iterator&
+  Bplustree<KeyT, ValueT, KeyCompare>::iterator::operator++() {
+  if(!visitor_.is_valid()) throw invalid_iterator();
+  ++pos_;
+  if(const auto *ptr = visitor_.template as<Leaf>(); pos_ == ptr->size()) {
+    pos_ = 0;
+    auto rht_ptr = ptr->rht_ptr();
+    if(rht_ptr == NULL_PAGE_ID) visitor_.drop();
+    else visitor_ = buf_pool_->visitor(rht_ptr);
+  }
+  return *this;
+}
+
+template <class KeyT, class ValueT, class KeyCompare>
+typename Bplustree<KeyT, ValueT, KeyCompare>::iterator
+Bplustree<KeyT, ValueT, KeyCompare>::begin() {
+  if(root_ptr_ == NULL_PAGE_ID)
+    return end();
+  Visitor visitor = buf_pool_.visitor(root_ptr_);
+  while(!visitor.template as<Base>()->is_leaf()) {
+    auto node = visitor.template as<Internal>();
+    auto ptr = node->child(0);
+    visitor = buf_pool_.visitor(ptr);
+  }
+  return iterator(&buf_pool_, std::move(visitor), 0);
+}
+
+template <class KeyT, class ValueT, class KeyCompare>
+typename Bplustree<KeyT, ValueT, KeyCompare>::iterator
+Bplustree<KeyT, ValueT, KeyCompare>::find_upper(const KeyT &key) {
+  if(root_ptr_ == NULL_PAGE_ID)
+    return end();
+  Visitor visitor = buf_pool_.visitor(root_ptr_);
+  while(!visitor.template as<Base>()->is_leaf()) {
+    auto node = visitor.template as<Internal>();
+    auto pos = node->locate_key(key, key_compare_);
+    auto ptr = node->child(pos);
+    visitor = buf_pool_.visitor(ptr);
+  }
+  auto node = visitor.template as<Leaf>();
+  auto pos = node->locate_key(key, key_compare_);
+  if(pos == node->size()) {
+    auto rht_ptr = node->rht_ptr();
+    if(rht_ptr == NULL_PAGE_ID) visitor.drop();
+    else visitor = buf_pool_.visitor(rht_ptr);
+    pos = 0;
+  }
+  return iterator(&buf_pool_, std::move(visitor), pos);
 }
 
 }
