@@ -46,61 +46,54 @@ private:
   std::string msg_;
 };
 
-using hash_uid_t = ism::hash_result_t;
+inline constexpr int BUF_CAPA = 512, K_DIST = 4;
 
 class UserManager {
+
+  struct LoggedInUserInfo {
+    access_lvl_t access_lvl;
+  };
+
 public:
 
   UserManager(std::filesystem::path path, Messenger *msgr)
-    : hash_uid_user_map_(path.assign(".huid"), BUFFER_CAPA, K_DIST), msgr_(msgr) {}
+    : hash_uid_user_map_(path.assign(".huid"), BUF_CAPA, K_DIST), msgr_(msgr) {}
   ~UserManager() = default;
 
-  bool NoRegisteredUserCheck();
-  static bool UserAccessCheck(const access_lvl_t &cur_access_lvl, const access_lvl_t &tar_access_lvl);
-  bool UserLoggedInCheck(const username_t &username);
+  // bool no_registered_user();
 
-  void AddUser(const UserType &user);
-  void Login(const username_t &username);
+  void AddUser(const username_t &cur_username, UserType &user);
+  void Login(const username_t &username, const password_t &password);
   void Logout(const username_t &username);
-  void QueryProfile(const username_t &username);
+  void QueryProfile(const username_t &cur_username, const username_t &tar_username);
   void ModifyProfile(
+    const username_t &cur_username, const username_t &tar_username,
     const password_t &password, bool has_password,
     const zh_name_t &zh_name, bool has_zh_name,
     const mail_addr_t &mail_addr, bool has_mail_addr,
     const access_lvl_t &access_lvl, bool has_access_lvl);
 
-  bool BuyTicket(
-    train_id_t train_id,
-    date_md_t departure_date,
-    stn_name_t departure_stn, stn_name_t arrival_stn,
-    seat_num_t ticket_num,
-    bool accept_waitlist);
   ism::vector<timestamp_t> QueryOrder();
   bool RefundTicket(timestamp_t order_rank);
 
+  bool has_logged_in(const username_t &username);
   void clean();
 
 private:
-  static constexpr int BUFFER_CAPA = 512, K_DIST = 4;
-
-  struct LoggedInUserInfo {
-    access_lvl_t access_lvl;
-  };
 
   ism::Bplustree<hash_uid_t, UserType> hash_uid_user_map_;
   ism::unordered_map<hash_uid_t, LoggedInUserInfo> logged_in_users_;
   Messenger *msgr_;
 };
 
-using hash_train_id_t = ism::hash_result_t;
-
 class TrainManager {
 public:
   TrainManager(std::filesystem::path path, Messenger *msgr)
-    : hash_train_id_train_map_(path.assign(".htid"), BUFFER_CAPA, K_DIST),
-      stn_hash_train_multimap_(path.assign(".stn_htid"), BUFFER_CAPA, K_DIST),
+    : hash_train_id_train_map_(path.assign(".htid"), BUF_CAPA, K_DIST),
+      stn_hash_train_multimap_(path.assign(".stn_htid"), BUF_CAPA, K_DIST),
       msgr_(msgr) {}
   ~TrainManager() = default;
+
 
   void AddTrain(const TrainType &train);
   void DeleteTrain(const train_id_t &train_id);
@@ -115,10 +108,12 @@ public:
     date_md_t departure_date,
     bool is_cost_order);
 
+  void get_train(const train_id_t &train_id, TrainType &train);
+  void get_train(const hash_train_id_t &hash_train_id, TrainType &train);
+  void update_train(const TrainType &train);
   void clean();
 
 private:
-  static constexpr int BUFFER_CAPA = 512, K_DIST = 4;
 
   ism::Bplustree<hash_train_id_t, TrainType> hash_train_id_train_map_;
   ism::MultiBplustree<ism::hash_result_t, TrainType> stn_hash_train_multimap_;
@@ -128,22 +123,33 @@ private:
 class TicketOrderManager {
 
 public:
+
   TicketOrderManager(std::filesystem::path path, Messenger *msgr)
-    : otime_order_map_(path.assign(".otime"), BUFFER_CAPA, K_DIST),
-      hash_train_id_order_map(path.assign(".htid_order"), BUFFER_CAPA, K_DIST),
+    : otime_order_map_(path.assign(".otime"), BUF_CAPA, K_DIST),
+      hash_uid_order_map_(path.assign(".huid_order"), BUF_CAPA, K_DIST),
+      hash_train_id_order_map(path.assign(".htid_order"), BUF_CAPA, K_DIST),
       msgr_(msgr) {}
   ~TicketOrderManager() = default;
 
-  void BuyTicket(timestamp_t timestamp);
-  void QueryOrder(ism::vector<timestamp_t> &order_list);
-  void RefundOrder(timestamp_t timestamp);
+  bool BuyTicket(
+    const username_t &username, TrainType &train,
+    date_md_t departure_date,
+    stn_name_t departure_stn, stn_name_t arrival_stn,
+    seat_num_t ticket_num,
+    bool accept_waitlist);
+  void QueryOrder(const username_t &username);
+  // returns the affected_orders and the position of this order in the list.
+  ism::pair<ism::vector<TicketOrderType>, order_id_t>
+  RefundOrder(const username_t &username, order_id_t order_id);
+
+  void cover_ticket(TicketOrderType &order, TrainType &train);
 
   void clean();
 
 private:
-  static constexpr int BUFFER_CAPA = 512, K_DIST = 4;
 
-  ism::Bplustree<timestamp_t, TicketOrderType> otime_order_map_;
+  ism::Bplustree<order_id_t, TicketOrderType> otime_order_map_;
+  ism::MultiBplustree<hash_uid_t, TicketOrderType> hash_uid_order_map_;
   ism::MultiBplustree<hash_train_id_t, TicketOrderType> hash_train_id_order_map;
   Messenger *msgr_;
 };

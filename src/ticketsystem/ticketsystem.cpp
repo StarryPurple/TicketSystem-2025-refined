@@ -49,76 +49,124 @@ void TicketSystem::run() {
 void TicketSystem::AddUser() {
   static CmdAddUser cmd;
   cmd.initialize(input_);
-  if(user_mgr_.NoRegisteredUserCheck()) {
-    cmd.access_lvl = HIGHEST_ACCESS_LVL;
-  }
+  static UserType user;
+  user.initialize(
+    cmd.tar_username, cmd.password, cmd.zh_name, cmd.mail_addr, cmd.access_lvl);
+  user_mgr_.AddUser(cmd.cur_username, user);
 }
 
 void TicketSystem::Login() {
   static CmdLogin cmd;
   cmd.initialize(input_);
+  user_mgr_.Login(cmd.username, cmd.password);
 }
 
 void TicketSystem::Logout() {
   static CmdLogout cmd;
   cmd.initialize(input_);
+  user_mgr_.Logout(cmd.username);
 }
 
 void TicketSystem::QueryProfile() {
   static CmdQueryProfile cmd;
   cmd.initialize(input_);
+  user_mgr_.QueryProfile(cmd.cur_username, cmd.tar_username);
 }
 
 void TicketSystem::ModifyProfile() {
   static CmdModifyProfile cmd;
   cmd.initialize(input_);
+  user_mgr_.ModifyProfile(
+    cmd.cur_username, cmd.tar_username,
+    cmd.password, cmd.has_password,
+    cmd.zh_name, cmd.has_zh_name,
+    cmd.mail_addr, cmd.has_mail_addr,
+    cmd.access_lvl, cmd.has_access_lvl);
 }
 
 void TicketSystem::AddTrain() {
   static CmdAddTrain cmd;
   cmd.initialize(input_);
   static TrainType train;
-  train.initialize(cmd);
+  train.initialize(
+    cmd.train_id, cmd.stn_num, cmd.seat_num,
+    cmd.stn_list, cmd.price_list,
+    cmd.start_time,
+    cmd.travel_time_list, cmd.stopover_time_list,
+    cmd.begin_date, cmd.final_date, cmd.train_type,
+    false);
+  train_mgr_.AddTrain(train);
 }
 
 void TicketSystem::DeleteTrain() {
   static CmdDeleteTrain cmd;
   cmd.initialize(input_);
+  train_mgr_.DeleteTrain(cmd.train_id);
 }
 
 void TicketSystem::ReleaseTrain() {
   static CmdReleaseTrain cmd;
   cmd.initialize(input_);
+  train_mgr_.ReleaseTrain(cmd.train_id);
 }
 
 void TicketSystem::QueryTrain() {
   static CmdQueryTrain cmd;
   cmd.initialize(input_);
+  train_mgr_.QueryTrain(cmd.train_id, cmd.departure_date);
 }
 
 void TicketSystem::QueryTicket() {
   static CmdQueryTicket cmd;
   cmd.initialize(input_);
+  train_mgr_.QueryTicket(
+    cmd.departure_stn, cmd.arrival_stn, cmd.departure_date, cmd.is_cost_order);
 }
 
 void TicketSystem::QueryTransfer() {
   static CmdQueryTransfer cmd;
   cmd.initialize(input_);
+  train_mgr_.QueryTransfer(
+    cmd.departure_stn, cmd.arrival_stn, cmd.departure_date, cmd.is_cost_order);
 }
 
 void TicketSystem::BuyTicket() {
   static CmdBuyTicket cmd;
   cmd.initialize(input_);
+  if(!user_mgr_.has_logged_in(cmd.username)) {
+    msgr_ << -1 << '\n';
+    return;
+  }
+  static TrainType train;
+  train_mgr_.get_train(cmd.train_id, train);
+  auto success = order_mgr_.BuyTicket(
+    cmd.username, train, cmd.departure_date, cmd.departure_stn, cmd.arrival_stn,
+    cmd.ticket_num, cmd.accept_waitlist);
+  if(success)
+    train_mgr_.update_train(train);
 }
 
 void TicketSystem::QueryOrder() {
   static CmdQueryOrder cmd;
   cmd.initialize(input_);
+  order_mgr_.QueryOrder(cmd.username);
 }
 
 void TicketSystem::RefundTicket() {
   static CmdRefundTicket cmd;
   cmd.initialize(input_);
+  auto [affected_orders, pos] = order_mgr_.RefundOrder(cmd.username, cmd.order_rank);
+  static TrainType train;
+  train_mgr_.get_train(affected_orders[pos].hash_train_id(), train);
+  for(auto i = pos; i > 0; --i) {
+    auto &order = affected_orders[i - 1];
+    if(order.is_pending()) {
+      if(order.can_be_covered(train))
+        order_mgr_.cover_ticket(order, train);
+      else break;
+    }
+  }
+  train_mgr_.update_train(train);
 }
 
 void TicketSystem::Clean() {

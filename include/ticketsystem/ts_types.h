@@ -21,6 +21,8 @@ using utf8_str_t = ism::array<char, N * 4>;
 /*************** basic data types ***************/
 /************************************************/
 
+using timestamp_t     = int; // timestamp type
+
 using username_t   = ascii_str_t<20>;
 using password_t   = ascii_str_t<30>;
 using zh_name_t    = utf8_str_t<5>;
@@ -43,13 +45,12 @@ using dur_list_t      = ism::array<time_dur_t, MAX_STATION_NUM>;
 using date_md_t       = DateMD;
 using train_type_t    = char;
 
-using order_cnt_t  = int;
+using order_id_t      = timestamp_t;
 
 /************************************************/
 /**************** command types *****************/
 /************************************************/
 
-using timestamp_t = int; // timestamp type
 
 // You can use some CRTP strategies.
 template <class DerivedCmd>
@@ -161,8 +162,8 @@ struct CmdQueryOrder : public CommandBase<CmdQueryOrder> {
   void handle(char par_name, const char *beg, size_t n);
 };
 struct CmdRefundTicket : public CommandBase<CmdRefundTicket> {
-  username_t  username;   // -u
-  timestamp_t order_rank; // -n?
+  username_t username;   // -u
+  order_id_t order_rank; // -n?
   void handle(char par_name, const char *beg, size_t n);
 };
 // struct CmdClean {};
@@ -171,6 +172,8 @@ struct CmdRefundTicket : public CommandBase<CmdRefundTicket> {
 /************************************************/
 /************** integrated types ****************/
 /************************************************/
+
+using hash_uid_t = ism::hash_result_t;
 
 class UserType {
 public:
@@ -199,6 +202,8 @@ private:
   access_lvl_t access_lvl_;
 };
 
+using hash_train_id_t = ism::hash_result_t;
+
 class TrainType {
 public:
   TrainType() = default;
@@ -211,15 +216,16 @@ public:
     const time_hm_t &start_time,
     const dur_list_t &travel_time_list, const dur_list_t &stopover_time_list,
     const date_md_t &begin_date, const date_md_t &final_date,
-    const train_type_t &train_type) {
+    const train_type_t &train_type, bool has_released) {
 
-    train_id_   = train_id;
-    stn_num_    = stn_num;
-    stn_list_   = stn_list;
-    start_time_ = start_time;
-    begin_date_ = begin_date;
-    final_date_ = final_date;
-    train_type_ = train_type;
+    train_id_     = train_id;
+    stn_num_      = stn_num;
+    stn_list_     = stn_list;
+    start_time_   = start_time;
+    begin_date_   = begin_date;
+    final_date_   = final_date;
+    train_type_   = train_type;
+    has_released_ = has_released;
 
     for(stn_num_t i = 0; i < stn_num - 1; ++i)
       seat_num_list_[i] = seat_num;
@@ -234,12 +240,6 @@ public:
       departure_time_list_[i + 1] = arrival_time_list_[i + 1] + stopover_time_list[i];
     }
     arrival_time_list_[stn_num - 1] = departure_time_list_[stn_num - 2] + travel_time_list[stn_num - 2];
-  }
-
-  void initialize(const CmdAddTrain &cmd) {
-    initialize(
-      cmd.train_id, cmd.stn_num, cmd.seat_num, cmd.stn_list, cmd.price_list, cmd.start_time,
-      cmd.travel_time_list, cmd.stopover_time_list, cmd.begin_date, cmd.final_date, cmd.train_type);
   }
 
 private:
@@ -262,6 +262,7 @@ private:
   date_md_t       begin_date_;
   date_md_t       final_date_;
   train_type_t    train_type_;
+  bool            has_released_;
 };
 
 class TicketOrderType {
@@ -269,7 +270,12 @@ public:
 
   TicketOrderType() = default;
 
+  bool is_pending() const;
+  bool can_be_covered(TrainType &train);
+  hash_train_id_t hash_train_id() const;
+
 private:
+
   enum class OrderStatus {
     Invalid,
     Success,
@@ -277,8 +283,10 @@ private:
     Cancelled
   };
 
-  timestamp_t order_time_;
-  OrderStatus status_;
+  order_id_t      order_id_;
+  OrderStatus     status_;
+  hash_uid_t      hash_uid_;
+  hash_train_id_t hash_train_id_;
 };
 
 }
