@@ -68,13 +68,13 @@ void MultiBptTest() {
     std::cin >> opt;
     if(opt[0] == 'i') {
       std::cin >> index >> value;
-      mul_bpt.insert(str_t(index).hash(), value);
+      mul_bpt.insert(hash1(index), value);
     } else if(opt[0] == 'f') {
       std::cin >> index;
-      print_list(mul_bpt.search(str_t(index).hash()));
+      print_list(mul_bpt.search(hash1(index)));
     } else if(opt[0] == 'd') {
       std::cin >> index >> value;
-      mul_bpt.remove(str_t(index).hash(), value);
+      mul_bpt.remove(hash1(index), value);
     }
   }
 }
