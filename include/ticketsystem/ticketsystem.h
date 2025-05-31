@@ -14,9 +14,9 @@ namespace ism = insomnia;
 class TicketSystem {
 
 public:
-  TicketSystem();
+  TicketSystem(std::filesystem::path path);
   void work_loop() {
-    do run(); while(status_ == Status::StatGood);
+    do run(); while(system_status_ == SystemStatus::StatGood);
   }
 
 private:
@@ -29,7 +29,7 @@ private:
     return ism::hash<const char*>()(str, n);
   }
 
-  enum class Status {
+  enum class SystemStatus {
     StatGood,
     StatShut
   };
@@ -40,10 +40,11 @@ private:
   timestamp_t timestamp_ {};
   char input_[16384] {};
   const char *token_ = input_;
-  Status status_ = Status::StatGood;
+  SystemStatus system_status_ = SystemStatus::StatGood;
+  Messenger msgr_;
   UserManager user_mgr_;
   TrainManager train_mgr_;
-  Messenger msgr_;
+  TicketOrderManager order_mgr_;
 
   void AddUser();
   void Login();

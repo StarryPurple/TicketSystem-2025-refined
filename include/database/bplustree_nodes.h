@@ -69,6 +69,7 @@ public:
   void redistribute_right(MultiBptInternalNode *rht);
 
   const KeyT& key(int pos) const { return storage_[pos].key; }
+  ValueT& value(int pos) { return storage_[pos].value; }
   const ValueT& value(int pos) const { return storage_[pos].value; }
   page_id_t child(int pos) const { return storage_[pos].child; }
 
@@ -111,6 +112,7 @@ public:
   void redistribute_right(BptLeafNode *rht);
 
   const KeyT& key(int pos) const { return storage_[pos].key; }
+  ValueT& value(int pos) { return storage_[pos].value; }
   const ValueT& value(int pos) const { return storage_[pos].value; }
   page_id_t rht_ptr() const { return rht_ptr_; }
 

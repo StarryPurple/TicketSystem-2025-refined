@@ -9,7 +9,7 @@ namespace insomnia {
 
 class runtime_error : public std::runtime_error {
 public:
-  explicit runtime_error(const char *detail = "") : runtime_error(detail) {}
+  explicit runtime_error(const char *detail = "") : std::runtime_error(detail) {}
 };
 
 class container_exception : public runtime_error {

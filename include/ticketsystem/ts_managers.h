@@ -51,7 +51,8 @@ using hash_uid_t = ism::hash_result_t;
 class UserManager {
 public:
 
-  UserManager(std::filesystem::path path, Messenger *msgr);
+  UserManager(std::filesystem::path path, Messenger *msgr)
+    : hash_uid_user_map_(path.assign(".huid"), BUFFER_CAPA, K_DIST), msgr_(msgr) {}
   ~UserManager() = default;
 
   bool NoRegisteredUserCheck();
@@ -88,14 +89,17 @@ private:
 
   ism::Bplustree<hash_uid_t, UserType> hash_uid_user_map_;
   ism::unordered_map<hash_uid_t, LoggedInUserInfo> logged_in_users_;
-  Messenger *messenger_;
+  Messenger *msgr_;
 };
 
 using hash_train_id_t = ism::hash_result_t;
 
 class TrainManager {
 public:
-  TrainManager(std::filesystem::path path, Messenger *msgr);
+  TrainManager(std::filesystem::path path, Messenger *msgr)
+    : hash_train_id_train_map_(path.assign(".htid"), BUFFER_CAPA, K_DIST),
+      stn_hash_train_multimap_(path.assign(".stn_htid"), BUFFER_CAPA, K_DIST),
+      msgr_(msgr) {}
   ~TrainManager() = default;
 
   void AddTrain(const TrainType &train);
@@ -124,7 +128,10 @@ private:
 class TicketOrderManager {
 
 public:
-  TicketOrderManager(std::filesystem::path path, Messenger *msgr);
+  TicketOrderManager(std::filesystem::path path, Messenger *msgr)
+    : otime_order_map_(path.assign(".otime"), BUFFER_CAPA, K_DIST),
+      hash_train_id_order_map(path.assign(".htid_order"), BUFFER_CAPA, K_DIST),
+      msgr_(msgr) {}
   ~TicketOrderManager() = default;
 
   void BuyTicket(timestamp_t timestamp);

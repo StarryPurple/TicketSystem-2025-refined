@@ -1,6 +1,7 @@
 #ifndef INSOMNIA_MULTI_BPLUSTREE_H
 #define INSOMNIA_MULTI_BPLUSTREE_H
 
+#include "pair.h"
 #include "buffer_pool.h"
 #include "bplustree_nodes.h"
 
@@ -36,6 +37,48 @@ public:
 
   [[nodiscard]]
   bool empty() const { return root_ptr_ == NULL_PAGE_ID; }
+
+  class iterator {
+    friend MultiBplustree;
+
+  public:
+    iterator() = default;
+
+    pair<const KeyT&, ValueT&> operator*() {
+      const auto ptr = visitor_.template as_mut<Leaf>();
+      return make_pair(ptr->key(pos_), ptr->value(pos_));
+    }
+    pair<const KeyT&, const ValueT&> operator*() const {
+      auto ptr = visitor_.template as<Leaf>();
+      return make_pair(ptr->key(pos_), ptr->value(pos_));
+    }
+
+    iterator& operator++();
+
+    bool operator==(const iterator &other) const {
+      if(buf_pool_ != other.buf_pool_) return false;
+      if(buf_pool_ == nullptr) return true;
+      if(visitor_.is_valid() != other.visitor_.is_valid()) return false;
+      if(!visitor_.is_valid()) return true;
+      return (visitor_.page_id() == other.visitor_.page_id()) && (pos_ == other.pos_);
+    }
+    bool operator!=(const iterator &other) const {
+      return !(*this == other);
+    }
+
+  private:
+    iterator(BufferType *buf_pool, Visitor visitor, int pos)
+      : buf_pool_(buf_pool), visitor_(std::move(visitor)), pos_(pos) {}
+
+    BufferType *buf_pool_;
+    Visitor visitor_;
+    int pos_;
+  };
+
+  iterator begin();
+  iterator end() { return iterator(&buf_pool_, Visitor(), 0); }
+
+  iterator find_lower(const KeyT &key);
 
 private:
 

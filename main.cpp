@@ -197,7 +197,6 @@ void MultitaskBptTest() {
 namespace ts = ticket_system;
 
 int main() {
-  ts::TicketSystem system;
-  system.work_loop();
+  MultiBptTest();
   return 0;
 }

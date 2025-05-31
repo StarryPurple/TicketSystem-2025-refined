@@ -4,7 +4,9 @@
 
 namespace ticket_system {
 
-TicketSystem::TicketSystem() {
+TicketSystem::TicketSystem(std::filesystem::path path)
+: user_mgr_(path.assign(".user"), &msgr_), train_mgr_(path.assign(".train"), &msgr_),
+  order_mgr_(path.assign(".order"), &msgr_) {
   command_hashmap_[hash("add_user")]       = &TicketSystem::AddUser;
   command_hashmap_[hash("login")]          = &TicketSystem::Login;
   command_hashmap_[hash("logout")]         = &TicketSystem::Logout;
@@ -120,12 +122,15 @@ void TicketSystem::RefundTicket() {
 }
 
 void TicketSystem::Clean() {
-
+  user_mgr_.clean();
+  train_mgr_.clean();
+  order_mgr_.clean();
+  msgr_ << "0\n";
 }
 
 void TicketSystem::Exit() {
-  logger_.print_log("bye\n");
-  status_ = Status::StatShut;
+  msgr_ << "bye\n";
+  system_status_ = SystemStatus::StatShut;
 }
 
 }

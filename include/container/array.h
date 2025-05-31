@@ -220,7 +220,7 @@ public:
   std::string str() { return std::string(_data); }
 
   hash_result_t hash() const noexcept {
-    return hash<array<char, N>>()(*this);
+    return insomnia::hash<array<char, N>>()(*this);
   }
 
 private:
