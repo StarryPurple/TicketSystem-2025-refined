@@ -272,7 +272,7 @@ MultiBplustree<KeyT, ValueT, KeyCompare, ValueCompare>::find_upper(const KeyT &k
   if(pos == node->size()) {
     auto rht_ptr = node->rht_ptr();
     if(rht_ptr == NULL_PAGE_ID) visitor.drop();
-    visitor = buf_pool_.visitor(rht_ptr);
+    else visitor = buf_pool_.visitor(rht_ptr);
     pos = 0;
   }
   return iterator(&buf_pool_, std::move(visitor), pos);
