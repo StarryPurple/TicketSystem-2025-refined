@@ -22,16 +22,13 @@ template <class KeyT, class ValueT, class KeyCompare, class ValueCompare>
 vector<ValueT> MultiBplustree<KeyT, ValueT, KeyCompare, ValueCompare>::search(const KeyT &key) {
   if(root_ptr_ == NULL_PAGE_ID)
     return vector<ValueT>();
-  vector<Visitor> visitors;
-  visitors.push_back(buf_pool_.visitor(root_ptr_));
-  while(!visitors.back().template as<Base>()->is_leaf()) {
-    auto node = visitors.back().template as<Internal>();
+  Visitor visitor = buf_pool_.visitor(root_ptr_);
+  while(!visitor.template as<Base>()->is_leaf()) {
+    auto node = visitor.template as<Internal>();
     auto pos = node->locate_key(key, key_compare_);
     auto ptr = node->child(pos);
-    visitors.push_back(buf_pool_.visitor(ptr));
+    visitor = buf_pool_.visitor(ptr);
   }
-  auto visitor = std::move(visitors.back());
-  visitors.pop_back();
   auto node = visitor.template as<Leaf>();
   auto pos = node->locate_key(key, key_compare_);
   vector<ValueT> result;
@@ -282,7 +279,7 @@ MultiBplustree<KeyT, ValueT, KeyCompare, ValueCompare>::begin() {
 
 template <class KeyT, class ValueT, class KeyCompare, class ValueCompare>
 typename MultiBplustree<KeyT, ValueT, KeyCompare, ValueCompare>::iterator
-MultiBplustree<KeyT, ValueT, KeyCompare, ValueCompare>::find_lower(const KeyT &key) {
+MultiBplustree<KeyT, ValueT, KeyCompare, ValueCompare>::find_upper(const KeyT &key) {
   if(root_ptr_ == NULL_PAGE_ID)
     return end();
   Visitor visitor = buf_pool_.visitor(root_ptr_);

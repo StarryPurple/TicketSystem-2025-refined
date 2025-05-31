@@ -78,7 +78,7 @@ public:
   iterator begin();
   iterator end() { return iterator(&buf_pool_, Visitor(), 0); }
 
-  iterator find_lower(const KeyT &key);
+  iterator find_upper(const KeyT &key);
 
 private:
 
