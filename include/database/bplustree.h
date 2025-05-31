@@ -30,7 +30,13 @@ public:
 
   bool remove(const KeyT &key);
 
-  void clear();
+  void clear() {
+    buf_pool_.clear();
+    root_ptr_ = NULL_PAGE_ID;
+  }
+
+  [[nodiscard]]
+  bool empty() const { return root_ptr_ == NULL_PAGE_ID; }
 
 private:
 

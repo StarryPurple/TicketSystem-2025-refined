@@ -189,7 +189,7 @@ void CmdRefundTicket::handle(char par_name, const char *beg, size_t n) {
   order_rank = 1;
   switch(par_name) {
   case 'u' : username   = username_t(beg, n);            break;
-  case 'n' : order_rank = ism::stoi<cmd_time_t>(beg, n); break;
+  case 'n' : order_rank = ism::stoi<timestamp_t>(beg, n); break;
   default : throw ism::invalid_argument("unknown parameter name.");
   }
 }

@@ -4,6 +4,7 @@
 #include <cstring>
 
 #include "exception.h"
+#include "algorithm.h"
 
 namespace insomnia {
 
@@ -102,6 +103,8 @@ private:
   T _data[N];
 };
 
+// the sentinel '\0' still exists, but not always where end() points to.
+// use c_str() for a const char* string.
 template <size_t N>
 class array<char, N> {
 public:
@@ -213,20 +216,25 @@ public:
 
   char* data() { return _data; }
   const char* c_str() const { return _data; }
+  size_t length() const { return std::strlen(_data); }
   std::string str() { return std::string(_data); }
 
-  u_int64_t hash() const {
-    u_int64_t hash = 5371;
-    const char *cur = _data;
-    char c;
-    while((c = *cur++)) {
-      hash = (hash << 5) + hash + c;
-    }
-    return hash;
+  hash_result_t hash() const noexcept {
+    return hash<array<char, N>>()(*this);
   }
 
 private:
   char _data[N + 1];
+};
+
+template <size_t N>
+struct hash<array<char, N>> {
+  constexpr hash_result_t operator()(const array<char, N> &arr) const noexcept {
+    return hash<const char*>()(arr.c_str());
+  }
+  constexpr hash_result_t operator()(const array<char, N> &arr, size_t n) const noexcept {
+    return hash<const char*>()(arr.c_str(), n);
+  }
 };
 
 }

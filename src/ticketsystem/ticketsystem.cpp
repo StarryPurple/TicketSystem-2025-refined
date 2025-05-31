@@ -30,8 +30,8 @@ void TicketSystem::run() {
   ism::advance_until(token_, ' '); // *token = ' '
   const char *stmp_beg = input_ + 1;
   const char *stmp_end = token_ - 1;
-  timestamp_ = ism::stoi<cmd_time_t>(stmp_beg, stmp_end - stmp_beg);
-  logger_.print_log(input_, token_ - input_ + 1);
+  timestamp_ = ism::stoi<timestamp_t>(stmp_beg, stmp_end - stmp_beg);
+  msgr_.append(input_, token_ - input_ + 1); // with the ' ' .
   ism::advance_past(token_, ' ');  // token = cmd name
   const char *cmd_name = token_;
   ism::advance_until(token_, ' '); // token = ' ' or '\0'
@@ -40,11 +40,16 @@ void TicketSystem::run() {
     it != command_hashmap_.end()) {
     (this->*it->second)();
   } else throw ism::invalid_argument(std::string("unknown command:" + std::string(cmd_name)).c_str());
+  msgr_.print_msg();
+  msgr_.reset();
 }
 
 void TicketSystem::AddUser() {
   static CmdAddUser cmd;
   cmd.initialize(input_);
+  if(user_mgr_.NoRegisteredUserCheck()) {
+    cmd.access_lvl = HIGHEST_ACCESS_LVL;
+  }
 }
 
 void TicketSystem::Login() {
@@ -70,6 +75,8 @@ void TicketSystem::ModifyProfile() {
 void TicketSystem::AddTrain() {
   static CmdAddTrain cmd;
   cmd.initialize(input_);
+  static TrainType train;
+  train.initialize(cmd);
 }
 
 void TicketSystem::DeleteTrain() {

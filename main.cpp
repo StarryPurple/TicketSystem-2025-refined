@@ -11,22 +11,22 @@
 #include "ts_time.h"
 #include "ticketsystem.h"
 
-u_int64_t hash1(const std::string &str) {
-  u_int64_t hash = 2166136261;
+uint64_t hash1(const std::string &str) {
+  uint64_t hash = 2166136261;
   for(const auto &c : str) {
     hash ^= c;
     hash *= 16777619;
   }
   return hash;
 }
-u_int64_t hash2(const std::string &str) {
-  u_int64_t hash = 5371;
+uint64_t hash2(const std::string &str) {
+  uint64_t hash = 5371;
   for(const auto &c : str)
     hash = (hash << 5) + hash + c;
   return hash;
 }
-u_int64_t hash3(const std::string &str) {
-  u_int64_t hash = 0xCBF29CE484222325ULL;
+uint64_t hash3(const std::string &str) {
+  uint64_t hash = 0xCBF29CE484222325ULL;
   for (const auto &c : str) {
     hash ^= static_cast<uint64_t>(c);
     hash *= 0x100000001B3ULL;
@@ -48,9 +48,9 @@ namespace fs = std::filesystem;
 
 void MultiBptTest() {
   using str_t = ism::array<char, 64>;
-  using index_t = u_int64_t;
+  using index_t = uint64_t;
   using value_t = int;
-  using MulBpt_t = ism::MultiBpt<index_t, value_t>;
+  using MulBpt_t = ism::MultiBplustree<index_t, value_t>;
 
   auto dir = fs::current_path() / "data";
   fs::create_directory(dir);
@@ -88,7 +88,7 @@ void SaferMultiBptTest() {
 void MultitaskMultiBptTest() {
   using index_t = ism::array<char, 64>;
   using value_t = int;
-  using MulBpt_t = ism::MultiBpt<index_t, value_t>;
+  using MulBpt_t = ism::MultiBplustree<index_t, value_t>;
 
   auto data_dir = fs::current_path() / "data";
   fs::remove_all(data_dir);

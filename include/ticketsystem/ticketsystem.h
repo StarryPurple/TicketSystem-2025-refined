@@ -2,9 +2,7 @@
 #define TICKETSYSTEM_TICKETSYSTEM_H
 
 
-#include "vector.h"
-#include "unordered_map.h"
-#include "ts_types.h"
+#include "ts_managers.h"
 
 namespace ticket_system {
 
@@ -15,37 +13,37 @@ namespace ism = insomnia;
 // layout problem? ignore it.
 class TicketSystem {
 
+public:
+  TicketSystem();
+  void work_loop() {
+    do run(); while(status_ == Status::StatGood);
+  }
+
+private:
+
+  static constexpr ism::hash_result_t hash(const char *str) {
+    return ism::hash<const char*>()(str);
+  }
+
+  static constexpr ism::hash_result_t hash(const char *str, size_t n) {
+    return ism::hash<const char*>()(str, n);
+  }
+
   enum class Status {
     StatGood,
     StatShut
   };
 
-  using hash_t = u_int64_t;
-
-  static constexpr hash_t hash(const char *str) {
-    hash_t hash = 5371;
-    while(*str != '\0') {
-      hash = (hash << 5) + hash + *(str++);
-    }
-    return hash;
-  }
-
-  static constexpr hash_t hash(const char *str, size_t n) {
-    hash_t hash = 5371;
-    for(size_t i = 0; i < n; ++i) {
-      hash = (hash << 5) + hash + *(str++);
-    }
-    return hash;
-  }
-
   using CommandFunc = void (TicketSystem::*)();
 
-  ism::unordered_map<hash_t, CommandFunc> command_hashmap_;
-  cmd_time_t timestamp_ {};
-  char input_[2048] {};
+  ism::unordered_map<ism::hash_result_t, CommandFunc> command_hashmap_;
+  timestamp_t timestamp_ {};
+  char input_[16384] {};
   const char *token_ = input_;
   Status status_ = Status::StatGood;
-  Logger logger_;
+  UserManager user_mgr_;
+  TrainManager train_mgr_;
+  Messenger msgr_;
 
   void AddUser();
   void Login();
@@ -66,15 +64,6 @@ class TicketSystem {
 
   // return false if exited.
   void run();
-
-public:
-
-  TicketSystem();
-
-  void work_loop() {
-    do run(); while(status_ == Status::StatGood);
-  }
-
 };
 
 

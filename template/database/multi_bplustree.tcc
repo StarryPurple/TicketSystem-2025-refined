@@ -6,7 +6,7 @@
 namespace insomnia {
 
 template <class KeyT, class ValueT, class KeyCompare, class ValueCompare>
-MultiBpt<KeyT, ValueT, KeyCompare, ValueCompare>::MultiBpt(
+MultiBplustree<KeyT, ValueT, KeyCompare, ValueCompare>::MultiBplustree(
   const std::filesystem::path &path, int buffer_capacity, int replacer_k_arg)
     : buf_pool_(path.string() + ".mult_bpt", buffer_capacity, replacer_k_arg) {
   if(!buf_pool_.read_meta(&root_ptr_))
@@ -14,12 +14,12 @@ MultiBpt<KeyT, ValueT, KeyCompare, ValueCompare>::MultiBpt(
 }
 
 template <class KeyT, class ValueT, class KeyCompare, class ValueCompare>
-MultiBpt<KeyT, ValueT, KeyCompare, ValueCompare>::~MultiBpt() {
+MultiBplustree<KeyT, ValueT, KeyCompare, ValueCompare>::~MultiBplustree() {
   buf_pool_.write_meta(&root_ptr_);
 }
 
 template <class KeyT, class ValueT, class KeyCompare, class ValueCompare>
-vector<ValueT> MultiBpt<KeyT, ValueT, KeyCompare, ValueCompare>::search(const KeyT &key) {
+vector<ValueT> MultiBplustree<KeyT, ValueT, KeyCompare, ValueCompare>::search(const KeyT &key) {
   if(root_ptr_ == NULL_PAGE_ID)
     return vector<ValueT>();
   vector<Visitor> visitors;
@@ -87,7 +87,7 @@ vector<ValueT> MultiBpt<KeyT, ValueT, KeyCompare, ValueCompare>::slow_search(con
 
 
 template <class KeyT, class ValueT, class KeyCompare, class ValueCompare>
-bool MultiBpt<KeyT, ValueT, KeyCompare, ValueCompare>::insert(const KeyT &key, const ValueT &value) {
+bool MultiBplustree<KeyT, ValueT, KeyCompare, ValueCompare>::insert(const KeyT &key, const ValueT &value) {
   if(root_ptr_ == NULL_PAGE_ID) {
     root_ptr_ = buf_pool_.alloc();
     auto visitor = buf_pool_.visitor(root_ptr_);
@@ -176,7 +176,7 @@ bool MultiBpt<KeyT, ValueT, KeyCompare, ValueCompare>::insert(const KeyT &key, c
 }
 
 template <class KeyT, class ValueT, class KeyCompare, class ValueCompare>
-bool MultiBpt<KeyT, ValueT, KeyCompare, ValueCompare>::remove(const KeyT &key, const ValueT &value) {
+bool MultiBplustree<KeyT, ValueT, KeyCompare, ValueCompare>::remove(const KeyT &key, const ValueT &value) {
   if(root_ptr_ == NULL_PAGE_ID)
     return false;
   vector<Visitor> visitors;
@@ -286,13 +286,6 @@ bool MultiBpt<KeyT, ValueT, KeyCompare, ValueCompare>::remove(const KeyT &key, c
   root_ptr_ = new_root_ptr;
   return true;
 }
-
-template <class KeyT, class ValueT, class KeyCompare, class ValueCompare>
-void MultiBpt<KeyT, ValueT, KeyCompare, ValueCompare>::clear() {
-  buf_pool_.clear();
-  root_ptr_ = NULL_PAGE_ID;
-}
-
 
 }
 

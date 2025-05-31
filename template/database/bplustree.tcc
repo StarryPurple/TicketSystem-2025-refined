@@ -243,12 +243,6 @@ bool Bplustree<KeyT, ValueT, KeyCompare>::remove(const KeyT &key) {
   return true;
 }
 
-template <class KeyT, class ValueT, class KeyCompare>
-void Bplustree<KeyT, ValueT, KeyCompare>::clear() {
-  buf_pool_.clear();
-  root_ptr_ = NULL_PAGE_ID;
-}
-
 }
 
 #endif

@@ -7,14 +7,14 @@ namespace insomnia {
 
 // inherits must be public for catch(std::exception &) to catch.
 
-class insomnia_exception : public std::runtime_error {
+class runtime_error : public std::runtime_error {
 public:
-  explicit insomnia_exception(const char *detail = "") : runtime_error(detail) {}
+  explicit runtime_error(const char *detail = "") : runtime_error(detail) {}
 };
 
-class container_exception : public insomnia_exception {
+class container_exception : public runtime_error {
 public:
-  explicit container_exception(const char *detail = "") : insomnia_exception(detail) {}
+  explicit container_exception(const char *detail = "") : runtime_error(detail) {}
 };
 
 class container_is_empty : public container_exception {
@@ -37,9 +37,9 @@ public:
   explicit invalid_argument(const char *detail = "") : container_exception(detail) {}
 };
 
-class disk_exception : public insomnia_exception {
+class disk_exception : public runtime_error {
 public:
-  explicit disk_exception(const char *detail = "") : insomnia_exception(detail) {}
+  explicit disk_exception(const char *detail = "") : runtime_error(detail) {}
 };
 
 class segmentation_fault : public disk_exception {
@@ -47,9 +47,9 @@ public:
   explicit segmentation_fault(const char *detail = "") : disk_exception(detail) {}
 };
 
-class pool_exception : public insomnia_exception {
+class pool_exception : public runtime_error {
 public:
-  explicit pool_exception(const char *detail = "") : insomnia_exception(detail) {}
+  explicit pool_exception(const char *detail = "") : runtime_error(detail) {}
 };
 
 class pool_overflow : public pool_exception {
@@ -67,14 +67,14 @@ public:
   explicit invalid_page(const char *detail = "") : pool_exception(detail) {}
 };
 
-class database_exception : public insomnia_exception {
+class database_exception : public runtime_error {
 public:
-  explicit database_exception(const char *detail = "") : insomnia_exception(detail) {}
+  explicit database_exception(const char *detail = "") : runtime_error(detail) {}
 };
 
-class algorithm_exception : public insomnia_exception {
+class algorithm_exception : public runtime_error {
 public:
-  explicit algorithm_exception(const char *detail = "") : insomnia_exception(detail) {}
+  explicit algorithm_exception(const char *detail = "") : runtime_error(detail) {}
 };
 
 class debug_exception : public database_exception {

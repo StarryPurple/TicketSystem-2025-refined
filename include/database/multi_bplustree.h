@@ -7,7 +7,7 @@
 namespace insomnia {
 
 template <class KeyT, class ValueT, class KeyCompare = std::less<KeyT>, class ValueCompare = std::less<ValueT>>
-class MultiBpt {
+class MultiBplustree {
 
   using Base = BptNodeBase;
   using Internal = MultiBptInternalNode<KeyT, ValueT>;
@@ -17,9 +17,9 @@ class MultiBpt {
 
 public:
 
-  MultiBpt(const std::filesystem::path &path, int buffer_capacity, int replacer_k_arg);
+  MultiBplustree(const std::filesystem::path &path, int buffer_capacity, int replacer_k_arg);
 
-  ~MultiBpt();
+  ~MultiBplustree();
 
   vector<ValueT> search(const KeyT &key);
 
@@ -29,7 +29,13 @@ public:
 
   bool remove(const KeyT &key, const ValueT &value);
 
-  void clear();
+  void clear() {
+    buf_pool_.clear();
+    root_ptr_ = NULL_PAGE_ID;
+  }
+
+  [[nodiscard]]
+  bool empty() const { return root_ptr_ == NULL_PAGE_ID; }
 
 private:
 
