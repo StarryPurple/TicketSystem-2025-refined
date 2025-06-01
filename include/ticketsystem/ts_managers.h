@@ -97,16 +97,6 @@ public:
 
 private:
 
-  struct QueryResultType {
-    std::string msg;
-    time_dur_t  time;
-    price_t     cost;
-
-    QueryResultType() = default;
-    QueryResultType(std::string _msg, time_dur_t _time, price_t _cost)
-      : msg(std::move(_msg)), time(_time), cost(_cost) {}
-  };
-
   ism::Bplustree<train_hid_t, TrainType> train_hid_train_map_;
   // stores trains that pass this station in the form of [htid, #the ordinal of the station of the train]
   // only to be enlarged in ReleaseTrain.

@@ -261,7 +261,7 @@ void TrainManager::QueryTicket(
   date_md_t passenger_departure_date, bool is_cost_order) {
 
   auto from_hsid = from_stn.hash();
-  auto dest_hsid   = dest_stn.hash();
+  auto dest_hsid = dest_stn.hash();
 
   // already sorted in terms of htid.
   const auto from_train_list = stn_hid_train_info_multimap_.search(from_hsid);
@@ -270,6 +270,17 @@ void TrainManager::QueryTicket(
   const auto from_train_num = from_train_list.size();
   const auto dest_train_num = dest_train_list.size();
 
+  // It's said that this goes against compilation... But I haven't seen it yet.
+  struct QueryResultType {
+    std::string msg;
+    time_dur_t  time;
+    price_t     cost;
+    train_id_t  train_id;
+
+    QueryResultType() = default;
+    QueryResultType(std::string _msg, time_dur_t _time, price_t _cost, train_id_t _train_id)
+      : msg(std::move(_msg)), time(_time), cost(_cost), train_id(_train_id) {}
+  };
 
   ism::vector<QueryResultType> ret_vec;
 
@@ -298,15 +309,25 @@ void TrainManager::QueryTicket(
              << " -> " << dest_stn << ' '
              << date_time_t(train_departure_date_time + train.arrival_time_list_[dest_ord]).string()
              << ' ' << cost << ' ' << available_seat_num << '\n';
-    ret_vec.emplace_back(tmp_msgr.str(), time, cost);
+    ret_vec.emplace_back(tmp_msgr.str(), time, cost, train.train_id_);
     ++from_ptr; ++dest_ptr;
   }
 
-  ism::sort(
-    ret_vec.begin(), ret_vec.end(),
-    [is_cost_order](const QueryResultType &A, const QueryResultType &B) {
-      return is_cost_order ? (A.cost < B.cost) : (A.time < B.time);
-    });
+  if(is_cost_order)
+    ism::sort(
+      ret_vec.begin(), ret_vec.end(),
+      [](const QueryResultType &A, const QueryResultType &B) {
+        if(A.cost != B.cost) return A.cost < B.cost;
+        return A.train_id < B.train_id;
+      });
+  else
+    ism::sort(
+      ret_vec.begin(), ret_vec.end(),
+      [](const QueryResultType &A, const QueryResultType &B) {
+        if(A.time != B.time) return A.time < B.time;
+        return A.train_id < B.train_id;
+      });
+
   msgr_ << ret_vec.size() << '\n';
   for(const auto& ret : ret_vec)
     msgr_ << ret.msg;
@@ -315,6 +336,30 @@ void TrainManager::QueryTicket(
 void TrainManager::QueryTransfer(
   stn_name_t from_stn, stn_name_t dest_stn,
   date_md_t passenger_departure_date, bool is_cost_order) {
+
+  auto from_hsid = from_stn.hash();
+  auto dest_hsid = dest_stn.hash();
+
+  // already sorted in terms of htid.
+  const auto from_train_list = stn_hid_train_info_multimap_.search(from_hsid);
+  const auto dest_train_list = stn_hid_train_info_multimap_.search(dest_hsid);
+
+  const auto from_train_num = from_train_list.size();
+  const auto dest_train_num = dest_train_list.size();
+
+  bool success = false;
+  Messenger  tmp_msgr;
+  struct InfoType {
+    time_dur_t time;
+    price_t    cost;
+    hash_stn_name_t from_stn;
+    hash_stn_name_t dest_stn;
+  } info_ret;
+
+  // collect all stations that the from_stn can go to through one train.
+  ism::unordered_map<hash_stn_name_t, InfoType> trainA_uset;
+
+  for(const auto &[train_hid, ])
 
 }
 
