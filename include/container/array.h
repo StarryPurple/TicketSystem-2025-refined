@@ -217,7 +217,7 @@ public:
   char* data() { return _data; }
   const char* c_str() const { return _data; }
   size_t length() const { return std::strlen(_data); }
-  std::string str() { return std::string(_data); }
+  std::string str() const { return std::string(_data); }
 
   hash_result_t hash() const noexcept {
     return insomnia::hash<array<char, N>>()(*this);

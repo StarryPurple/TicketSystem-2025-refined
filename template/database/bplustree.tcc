@@ -260,6 +260,17 @@ Bplustree<KeyT, ValueT, KeyCompare>::begin() {
 
 template <class KeyT, class ValueT, class KeyCompare>
 typename Bplustree<KeyT, ValueT, KeyCompare>::iterator
+Bplustree<KeyT, ValueT, KeyCompare>::find(const KeyT &key) {
+  auto it = find_upper(key);
+  if(it == end())
+    return it;
+  if(!key_equal((*it).first, key))
+    return end();
+  return it;
+}
+
+template <class KeyT, class ValueT, class KeyCompare>
+typename Bplustree<KeyT, ValueT, KeyCompare>::iterator
 Bplustree<KeyT, ValueT, KeyCompare>::find_upper(const KeyT &key) {
   if(root_ptr_ == NULL_PAGE_ID)
     return end();
@@ -274,7 +285,8 @@ Bplustree<KeyT, ValueT, KeyCompare>::find_upper(const KeyT &key) {
   auto pos = node->locate_key(key, key_compare_);
   if(pos == node->size()) {
     auto rht_ptr = node->rht_ptr();
-    if(rht_ptr == NULL_PAGE_ID) visitor.drop();
+    if(rht_ptr == NULL_PAGE_ID)
+      return end();
     else visitor = buf_pool_.visitor(rht_ptr);
     pos = 0;
   }

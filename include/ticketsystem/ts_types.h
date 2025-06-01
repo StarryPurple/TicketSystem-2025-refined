@@ -175,7 +175,11 @@ struct CmdRefundTicket : public CommandBase<CmdRefundTicket> {
 
 using hash_uid_t = ism::hash_result_t;
 
+class UserManager;
+
 class UserType {
+  friend UserManager;
+
 public:
   UserType() = default;
 
@@ -194,6 +198,9 @@ public:
     initialize(cmd.tar_username, cmd.password, cmd.zh_name, cmd.mail_addr, cmd.access_lvl);
   }
 
+  [[nodiscard]]
+  ism::hash_result_t hash() const { return username_.hash(); }
+
 private:
   username_t   username_;
   password_t   password_;
@@ -204,7 +211,11 @@ private:
 
 using hash_train_id_t = ism::hash_result_t;
 
+class TrainManager;
+
 class TrainType {
+  friend TrainManager;
+
 public:
   TrainType() = default;
   void initialize(
@@ -242,6 +253,9 @@ public:
     arrival_time_list_[stn_num - 1] = departure_time_list_[stn_num - 2] + travel_time_list[stn_num - 2];
   }
 
+  [[nodiscard]]
+  ism::hash_result_t hash() const { return train_id_.hash(); }
+
 private:
   train_id_t      train_id_;
   stn_num_t       stn_num_;
@@ -265,9 +279,12 @@ private:
   bool            has_released_;
 };
 
-class TicketOrderType {
-public:
+class TicketOrderManager;
 
+class TicketOrderType {
+friend TicketOrderManager;
+
+public:
   TicketOrderType() = default;
 
   bool is_pending() const;

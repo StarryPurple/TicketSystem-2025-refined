@@ -5,8 +5,9 @@
 namespace ticket_system {
 
 TicketSystem::TicketSystem(std::filesystem::path path)
-: user_mgr_(path.assign(".user"), &msgr_), train_mgr_(path.assign(".train"), &msgr_),
-  order_mgr_(path.assign(".order"), &msgr_) {
+: user_mgr_(path.assign(".user"), msgr_),
+  train_mgr_(path.assign(".train"), msgr_),
+  order_mgr_(path.assign(".order"), msgr_) {
   command_hashmap_[hash("add_user")]       = &TicketSystem::AddUser;
   command_hashmap_[hash("login")]          = &TicketSystem::Login;
   command_hashmap_[hash("logout")]         = &TicketSystem::Logout;

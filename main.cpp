@@ -197,6 +197,6 @@ void MultitaskBptTest() {
 namespace ts = ticket_system;
 
 int main() {
-  MultiBptTest();
+
   return 0;
 }

@@ -15,26 +15,13 @@ namespace ism = insomnia;
 class Messenger {
 public:
 
-  Messenger& operator<<(const char *msg) {
-    msg_ += std::string(msg);
-    return *this;
-  }
-  Messenger& operator<<(const std::string &msg) {
-    msg_ += msg;
-    return *this;
-  }
-  template <class Integer>
-    requires std::is_integral_v<Integer>
-  Messenger& operator<<(Integer val) {
-    msg_ += ism::itos(val);
-    return *this;
-  }
-
-  Messenger& append(const char *msg, size_t n) {
-    for(size_t i = 0; i < n; ++i)
-      msg_ += *(msg++);
-    return *this;
-  }
+  Messenger& operator<<(const char *msg);
+  Messenger& operator<<(const std::string &msg);
+  template<size_t N>
+  Messenger& operator<<(const ism::array<char, N> &msg);
+  template <class Integer> requires std::is_integral_v<Integer>
+  Messenger& operator<<(Integer val);
+  Messenger& append(const char *msg, size_t n);
 
   void print_msg() const { std::cout << msg_; }
   void print_err() const { std::cerr << msg_; }
@@ -46,23 +33,23 @@ private:
   std::string msg_;
 };
 
-inline constexpr int BUF_CAPA = 512, K_DIST = 4;
 
 class UserManager {
 
   struct LoggedInUserInfo {
+    LoggedInUserInfo() = default;
+    explicit LoggedInUserInfo(access_lvl_t _access_lvl) : access_lvl(_access_lvl) {}
     access_lvl_t access_lvl;
   };
 
 public:
 
-  UserManager(std::filesystem::path path, Messenger *msgr)
-    : hash_uid_user_map_(path.assign(".huid"), BUF_CAPA, K_DIST), msgr_(msgr) {}
+  UserManager(std::filesystem::path path, Messenger &msgr);
   ~UserManager() = default;
 
   // bool no_registered_user();
 
-  void AddUser(const username_t &cur_username, UserType &user);
+  void AddUser(const username_t &cur_username, UserType &tar_user);
   void Login(const username_t &username, const password_t &password);
   void Logout(const username_t &username);
   void QueryProfile(const username_t &cur_username, const username_t &tar_username);
@@ -73,9 +60,6 @@ public:
     const mail_addr_t &mail_addr, bool has_mail_addr,
     const access_lvl_t &access_lvl, bool has_access_lvl);
 
-  ism::vector<timestamp_t> QueryOrder();
-  bool RefundTicket(timestamp_t order_rank);
-
   bool has_logged_in(const username_t &username);
   void clean();
 
@@ -83,15 +67,12 @@ private:
 
   ism::Bplustree<hash_uid_t, UserType> hash_uid_user_map_;
   ism::unordered_map<hash_uid_t, LoggedInUserInfo> logged_in_users_;
-  Messenger *msgr_;
+  Messenger &msgr_;
 };
 
 class TrainManager {
 public:
-  TrainManager(std::filesystem::path path, Messenger *msgr)
-    : hash_train_id_train_map_(path.assign(".htid"), BUF_CAPA, K_DIST),
-      stn_hash_train_multimap_(path.assign(".stn_htid"), BUF_CAPA, K_DIST),
-      msgr_(msgr) {}
+  TrainManager(std::filesystem::path path, Messenger &msgr);
   ~TrainManager() = default;
 
 
@@ -117,18 +98,14 @@ private:
 
   ism::Bplustree<hash_train_id_t, TrainType> hash_train_id_train_map_;
   ism::MultiBplustree<ism::hash_result_t, TrainType> stn_hash_train_multimap_;
-  Messenger *msgr_;
+  Messenger &msgr_;
 };
 
 class TicketOrderManager {
 
 public:
 
-  TicketOrderManager(std::filesystem::path path, Messenger *msgr)
-    : otime_order_map_(path.assign(".otime"), BUF_CAPA, K_DIST),
-      hash_uid_order_map_(path.assign(".huid_order"), BUF_CAPA, K_DIST),
-      hash_train_id_order_map(path.assign(".htid_order"), BUF_CAPA, K_DIST),
-      msgr_(msgr) {}
+  TicketOrderManager(std::filesystem::path path, Messenger &msgr);
   ~TicketOrderManager() = default;
 
   bool BuyTicket(
@@ -148,10 +125,11 @@ public:
 
 private:
 
-  ism::Bplustree<order_id_t, TicketOrderType> otime_order_map_;
+  ism::Bplustree<order_id_t, TicketOrderType> order_id_order_map_;
   ism::MultiBplustree<hash_uid_t, TicketOrderType> hash_uid_order_map_;
   ism::MultiBplustree<hash_train_id_t, TicketOrderType> hash_train_id_order_map;
-  Messenger *msgr_;
+  ism::IndexPool order_id_allocator;
+  Messenger &msgr_;
 };
 
 }
