@@ -2,6 +2,7 @@
 #define TICKETSYSTEM_TS_TYPES_H
 
 #include <iostream>
+#include <ts_managers.h>
 
 #include "pair.h"
 #include "array.h"
@@ -21,7 +22,7 @@ using utf8_str_t = ism::array<char, N * 4>;
 /*************** basic data types ***************/
 /************************************************/
 
-using timestamp_t     = int; // timestamp type
+using timestamp_t  = int; // timestamp type
 
 using username_t   = ascii_str_t<20>;
 using password_t   = ascii_str_t<30>;
@@ -31,6 +32,11 @@ using access_lvl_t = short;
 constexpr access_lvl_t HIGHEST_ACCESS_LVL = 10;
 
 constexpr size_t MAX_STATION_NUM = 100;
+using time_hm_t       = TimeHM;
+using time_dur_t      = minutes;
+using dur_list_t      = ism::array<time_dur_t, MAX_STATION_NUM>;
+using date_md_t       = DateMD;
+using date_time_t     = DateTime;
 using train_id_t      = ascii_str_t<20>;
 using stn_num_t       = short;
 using seat_num_t      = int;
@@ -39,11 +45,6 @@ using stn_name_t      = utf8_str_t<10>;
 using stn_list_t      = ism::array<stn_name_t, MAX_STATION_NUM>;
 using price_t         = int;
 using price_list_t    = ism::array<price_t, MAX_STATION_NUM>;
-using time_hm_t       = TimeHM;
-using time_dur_t      = minutes;
-using dur_list_t      = ism::array<time_dur_t, MAX_STATION_NUM>;
-using date_md_t       = DateMD;
-using date_time_t     = DateTime;
 using train_type_t    = char;
 
 using order_id_t      = timestamp_t;
@@ -232,16 +233,14 @@ public:
     const train_type_t &train_type, bool has_released) {
 
     train_id_     = train_id;
+    max_seat_num_ = seat_num;
     stn_num_      = stn_num;
     stn_list_     = stn_list;
     start_time_   = start_time;
-    begin_date_   = begin_date;
+    start_date_   = begin_date;
     final_date_   = final_date;
     train_type_   = train_type;
     has_released_ = has_released;
-
-    for(stn_num_t i = 0; i < stn_num - 1; ++i)
-      seat_num_list_[i] = seat_num;
 
     accumulative_price_list_[0] = 0;
     for(stn_num_t i = 0; i < stn_num - 1; ++i)
@@ -258,19 +257,12 @@ public:
   [[nodiscard]]
   ism::hash_result_t hash() const { return train_id_.hash(); }
 
-  seat_num_t available_seat_num(stn_num_t from_ord, stn_num_t dest_ord) const {
-    seat_num_t ret = seat_num_list_[from_ord];
-    for(auto i = from_ord + 1; i <= dest_ord; ++i)
-      ret = std::min(ret, seat_num_list_[i]);
-    return ret;
-  }
-
   /**
    * @param train_departure_date the date the train departs from the first station.
    * @return whether this date is within the train's capability.
    */
   bool check_train_departure_date(const date_md_t &train_departure_date) const {
-    return begin_date_ <= train_departure_date && train_departure_date <= final_date_;
+    return start_date_ <= train_departure_date && train_departure_date <= final_date_;
   }
 
   /**
@@ -287,12 +279,20 @@ public:
     return date_time_here.date_md();
   }
 
+  price_t cost(stn_num_t from_ord, stn_num_t dest_ord) const {
+    return accumulative_price_list_[dest_ord] - accumulative_price_list_[from_ord];
+  }
+
+  time_dur_t time(stn_num_t from_ord, stn_num_t dest_ord) const {
+    return arrival_time_list_[dest_ord] - departure_time_list_[from_ord];
+  }
+
 private:
   train_id_t      train_id_;
   stn_num_t       stn_num_;
   // the number of unsold seats from the station to its next.
   // 0-based. val[stn_num - 1] is always 0.
-  seat_num_list_t seat_num_list_;
+  seat_num_t      max_seat_num_;
   stn_list_t      stn_list_;
   // pre-sum of prices to pay from the first station to another station.
   // 0-based. val[0] is always 0.
@@ -304,14 +304,44 @@ private:
   // pre-sum of previous time cost before arrival of a station.
   // 0-based. val[0] is meaningless.
   dur_list_t      arrival_time_list_;
-  date_md_t       begin_date_;
+  date_md_t       start_date_;
   date_md_t       final_date_;
   train_type_t    train_type_;
   bool            has_released_ = false;
 };
 
+class TrainSeatStatus {
+  friend TrainManager;
+public:
+
+  TrainSeatStatus() = default;
+  void initialize(seat_num_t seat_num, stn_num_t stn_num) {
+    stn_num_ = stn_num;
+     for(size_t j = 0; j < stn_num - 1; ++j)
+       seat_num_list_[j] = seat_num;
+  }
+
+  seat_num_t available_seat_num(stn_num_t from_ord, stn_num_t dest_ord) const {
+    seat_num_t ret = seat_num_list_[from_ord];
+    for(auto i = from_ord + 1; i < dest_ord; ++i)
+      ret = std::min(ret, seat_num_list_[i]);
+    return ret;
+  }
+
+  void consume_seat_num(seat_num_t seat_num, stn_num_t from_ord, stn_num_t dest_ord) {
+    for(auto i = from_ord; i < dest_ord; ++i)
+      seat_num_list_[i] -= seat_num;
+  }
+
+private:
+  seat_num_list_t seat_num_list_;
+  stn_num_t stn_num_;
+};
+
 class TicketOrderManager;
 
+// The ordering is the reverse of order_id:
+// The latest order comes first.
 class TicketOrderType {
 friend TicketOrderManager;
 
@@ -319,7 +349,31 @@ public:
   TicketOrderType() = default;
 
   bool is_pending() const { return status_ == OrderStatus::Pending; }
-  train_hid_t hash_train_id() const { return hash_train_id_; }
+  train_id_t train_id() const { return train_id_; }
+
+  auto operator<=>(const TicketOrderType &other) const {
+    return other.order_id_ <=> order_id_;
+  }
+
+  std::string string() const {
+    std::string ret;
+    ret += '[';
+    switch(status_) {
+    case OrderStatus::Success:  ret += "success";  break;
+    case OrderStatus::Pending:  ret += "pending";  break;
+    case OrderStatus::Refunded: ret += "refunded"; break;
+    default: throw ism::runtime_error("Ticket system : Invalid order status.");
+    }
+    ret += "] ";
+    ret += train_id_.c_str(); ret += ' ';
+    ret += from_stn_.c_str(); ret += ' ';
+    ret += from_date_time_.string(); ret += " -> ";
+    ret += dest_stn_.c_str(); ret += ' ';
+    ret += dest_date_time_.string(); ret += ' ';
+    ret += ism::itos(price_); ret += ' ';
+    ret += ism::itos(ticket_num_);
+    return ret;
+  }
 
 private:
 
@@ -327,16 +381,21 @@ private:
     Invalid,
     Success,
     Pending,
-    Cancelled
+    Refunded
   };
 
-  order_id_t      order_id_;
-  OrderStatus     status_;
-  user_hid_t      hash_uid_;
-  train_hid_t     hash_train_id_;
-  stn_num_t       departure_stn_ord_;
-  stn_num_t       arrival_stn_ord_;
-  seat_num_t      ticket_num_;
+  order_id_t  order_id_;
+  OrderStatus status_;
+  user_hid_t  hash_uid_;
+  train_id_t  train_id_;
+  stn_name_t  from_stn_;
+  stn_name_t  dest_stn_;
+  date_time_t from_date_time_;
+  date_time_t dest_date_time_;
+  stn_num_t   from_stn_ord_;
+  stn_num_t   dest_stn_ord_;
+  price_t     price_;
+  seat_num_t  ticket_num_;
 };
 
 }

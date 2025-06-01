@@ -135,6 +135,7 @@ public:
 
 class DateMD {
 private:
+  static constexpr short MAX_DAYS = 92;
   static constexpr days DAY0701{30}, DAY0801{61}; //...
 
   days day_;

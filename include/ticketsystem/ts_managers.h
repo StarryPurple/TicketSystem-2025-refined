@@ -20,6 +20,7 @@ public:
   Messenger& operator<<(const std::string &msg);
   template<size_t N>
   Messenger& operator<<(const ism::array<char, N> &msg);
+  // Messenger& operator<<(const time_dur_t &msg);
   template <class Integer> requires std::is_integral_v<Integer>
   Messenger& operator<<(Integer val);
   Messenger& append(const char *msg, size_t n);
@@ -91,13 +92,22 @@ public:
     bool is_cost_order);
 
   void get_train(const train_id_t &train_id, TrainType &train);
-  void get_train(const train_hid_t &hash_train_id, TrainType &train);
-  void update_train(const TrainType &train);
+  void get_train(const train_hid_t &train_hid, TrainType &train);
+  void update_train_status(const train_id_t &train_id, days_count_t days_count, TrainSeatStatus &status);
   void clean();
 
 private:
 
+  struct TrainScheduleType {
+    train_hid_t  train_hid;
+    days_count_t days_count;
+    TrainScheduleType() = default;
+    TrainScheduleType(train_hid_t _train_hid, days_count_t _days_count)
+      : train_hid(_train_hid), days_count(_days_count) {}
+  };
+
   ism::Bplustree<train_hid_t, TrainType> train_hid_train_map_;
+  ism::Bplustree<TrainScheduleType, TrainSeatStatus> train_hid_seats_map_;
   // stores trains that pass this station in the form of [htid, #the ordinal of the station of the train]
   // only to be enlarged in ReleaseTrain.
   // So via this method, only released trains can be seen.
@@ -114,8 +124,8 @@ public:
 
   bool BuyTicket(
     const username_t &username, TrainType &train,
-    date_md_t departure_date,
-    stn_name_t departure_stn, stn_name_t arrival_stn,
+    date_md_t passenger_departure_date,
+    stn_name_t from_stn, stn_name_t dest_stn,
     seat_num_t ticket_num,
     bool accept_waitlist);
   void QueryOrder(const username_t &username);
