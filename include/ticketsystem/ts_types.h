@@ -43,6 +43,7 @@ using time_hm_t       = TimeHM;
 using time_dur_t      = minutes;
 using dur_list_t      = ism::array<time_dur_t, MAX_STATION_NUM>;
 using date_md_t       = DateMD;
+using date_time_t     = DateTime;
 using train_type_t    = char;
 
 using order_id_t      = timestamp_t;
@@ -130,27 +131,27 @@ struct CmdReleaseTrain : public CommandBase<CmdReleaseTrain> {
 };
 struct CmdQueryTrain : public CommandBase<CmdQueryTrain> {
   train_id_t train_id;       // -i
-  date_md_t  departure_date; // -d
+  date_md_t  train_departure_date; // -d
   void handle(char par_name, const char *beg, size_t n);
 };
 struct CmdQueryTicket : public CommandBase<CmdQueryTicket> {
   stn_name_t departure_stn;  // -s
   stn_name_t arrival_stn;    // -t
-  date_md_t  departure_date; // -d
+  date_md_t  passenger_departure_date; // -d
   bool is_cost_order;        // -p?
   void handle(char par_name, const char *beg, size_t n);
 };
 struct CmdQueryTransfer : public CommandBase<CmdQueryTransfer> {
   stn_name_t departure_stn;  // -s
   stn_name_t arrival_stn;    // -t
-  date_md_t  departure_date; // -d
+  date_md_t  passenger_departure_date; // -d
   bool is_cost_order;        // -p?
   void handle(char par_name, const char *beg, size_t n);
 };
 struct CmdBuyTicket : public CommandBase<CmdBuyTicket> {
   username_t username;       // -u
   train_id_t train_id;       // -i
-  date_md_t  departure_date; // -d
+  date_md_t  passenger_departure_date; // -d
   stn_name_t departure_stn;  // -f
   stn_name_t arrival_stn;    // -t
   seat_num_t ticket_num;     // -n
@@ -173,7 +174,7 @@ struct CmdRefundTicket : public CommandBase<CmdRefundTicket> {
 /************** integrated types ****************/
 /************************************************/
 
-using hash_uid_t = ism::hash_result_t;
+using user_hid_t = ism::hash_result_t;
 
 class UserManager;
 
@@ -209,7 +210,8 @@ private:
   access_lvl_t access_lvl_;
 };
 
-using hash_train_id_t = ism::hash_result_t;
+using train_hid_t = ism::hash_result_t;
+using hash_stn_name_t = ism::hash_result_t;
 
 class TrainManager;
 
@@ -256,6 +258,35 @@ public:
   [[nodiscard]]
   ism::hash_result_t hash() const { return train_id_.hash(); }
 
+  seat_num_t available_seat_num(stn_num_t from_ord, stn_num_t dest_ord) const {
+    seat_num_t ret = seat_num_list_[from_ord];
+    for(auto i = from_ord + 1; i <= dest_ord; ++i)
+      ret = std::min(ret, seat_num_list_[i]);
+    return ret;
+  }
+
+  /**
+   * @param train_departure_date the date the train departs from the first station.
+   * @return whether this date is within the train's capability.
+   */
+  bool check_train_departure_date(const date_md_t &train_departure_date) const {
+    return begin_date_ <= train_departure_date && train_departure_date <= final_date_;
+  }
+
+  /**
+   * @param passenger_departure_date the date one departs from stn[stn_ord].
+   * @param stn_ord the ordinal of the station in the route of the train.
+   * @return the date the train departs from the first station.
+   */
+  date_md_t get_train_departure_date(
+    const date_md_t &passenger_departure_date, stn_num_t stn_ord) const {
+
+    // The date_hm_t + minutes addition will automatically be normalized.
+    date_time_t date_time_here(passenger_departure_date, start_time_ + departure_time_list_[stn_ord]);
+    date_time_here -= departure_time_list_[stn_ord];
+    return date_time_here.date_md();
+  }
+
 private:
   train_id_t      train_id_;
   stn_num_t       stn_num_;
@@ -276,7 +307,7 @@ private:
   date_md_t       begin_date_;
   date_md_t       final_date_;
   train_type_t    train_type_;
-  bool            has_released_;
+  bool            has_released_ = false;
 };
 
 class TicketOrderManager;
@@ -287,9 +318,8 @@ friend TicketOrderManager;
 public:
   TicketOrderType() = default;
 
-  bool is_pending() const;
-  bool can_be_covered(TrainType &train);
-  hash_train_id_t hash_train_id() const;
+  bool is_pending() const { return status_ == OrderStatus::Pending; }
+  train_hid_t hash_train_id() const { return hash_train_id_; }
 
 private:
 
@@ -302,8 +332,11 @@ private:
 
   order_id_t      order_id_;
   OrderStatus     status_;
-  hash_uid_t      hash_uid_;
-  hash_train_id_t hash_train_id_;
+  user_hid_t      hash_uid_;
+  train_hid_t     hash_train_id_;
+  stn_num_t       departure_stn_ord_;
+  stn_num_t       arrival_stn_ord_;
+  seat_num_t      ticket_num_;
 };
 
 }

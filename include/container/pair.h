@@ -11,6 +11,12 @@ struct pair {
   template <class U1, class U2>
   constexpr pair(U1 &&x, U2 &&y)
     : first(std::forward<U1>(x)), second(std::forward<U2>(y)) {}
+
+  constexpr bool operator<(const pair &other) const {
+    if(first < other.first) return true;
+    if(first > other.first) return false;
+    return second < other.second;
+  }
 };
 
 template <class T1, class T2>

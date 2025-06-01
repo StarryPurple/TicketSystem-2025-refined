@@ -197,6 +197,11 @@ void MultitaskBptTest() {
 namespace ts = ticket_system;
 
 int main() {
-
+  auto data_dir = fs::current_path() / "ts_test";
+  fs::remove_all(data_dir);
+  fs::create_directory(data_dir);
+  auto name_base = data_dir / "A";
+  ts::TicketSystem ticket_system(name_base);
+  ticket_system.work_loop();
   return 0;
 }

@@ -52,6 +52,10 @@ public:
       auto ptr = visitor_.template as<Leaf>();
       return make_pair(ptr->key(pos_), ptr->value(pos_));
     }
+    pair<const KeyT&, const ValueT&> view() const {
+      auto ptr = visitor_.template as<Leaf>();
+      return make_pair(ptr->key(pos_), ptr->value(pos_));
+    }
 
     iterator& operator++();
 

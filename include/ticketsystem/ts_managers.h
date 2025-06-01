@@ -15,6 +15,7 @@ namespace ism = insomnia;
 class Messenger {
 public:
 
+  Messenger& operator<<(char msg);
   Messenger& operator<<(const char *msg);
   Messenger& operator<<(const std::string &msg);
   template<size_t N>
@@ -65,8 +66,8 @@ public:
 
 private:
 
-  ism::Bplustree<hash_uid_t, UserType> hash_uid_user_map_;
-  ism::unordered_map<hash_uid_t, LoggedInUserInfo> logged_in_users_;
+  ism::Bplustree<user_hid_t, UserType> user_hid_user_map_;
+  ism::unordered_map<user_hid_t, LoggedInUserInfo> logged_in_users_;
   Messenger &msgr_;
 };
 
@@ -79,25 +80,38 @@ public:
   void AddTrain(const TrainType &train);
   void DeleteTrain(const train_id_t &train_id);
   void ReleaseTrain(const train_id_t &train_id);
-  void QueryTrain(const train_id_t &train_id, date_md_t departure_date);
+  void QueryTrain(const train_id_t &train_id, date_md_t train_departure_date);
   void QueryTicket(
-    stn_name_t departure_stn, stn_name_t arrival_stn,
-    date_md_t departure_date,
+    stn_name_t from_stn, stn_name_t dest_stn,
+    date_md_t passenger_departure_date,
     bool is_cost_order);
   void QueryTransfer(
-    stn_name_t departure_stn, stn_name_t arrival_stn,
-    date_md_t departure_date,
+    stn_name_t from_stn, stn_name_t dest_stn,
+    date_md_t passenger_departure_date,
     bool is_cost_order);
 
   void get_train(const train_id_t &train_id, TrainType &train);
-  void get_train(const hash_train_id_t &hash_train_id, TrainType &train);
+  void get_train(const train_hid_t &hash_train_id, TrainType &train);
   void update_train(const TrainType &train);
   void clean();
 
 private:
 
-  ism::Bplustree<hash_train_id_t, TrainType> hash_train_id_train_map_;
-  ism::MultiBplustree<ism::hash_result_t, TrainType> stn_hash_train_multimap_;
+  struct QueryResultType {
+    std::string msg;
+    time_dur_t  time;
+    price_t     cost;
+
+    QueryResultType() = default;
+    QueryResultType(std::string _msg, time_dur_t _time, price_t _cost)
+      : msg(std::move(_msg)), time(_time), cost(_cost) {}
+  };
+
+  ism::Bplustree<train_hid_t, TrainType> train_hid_train_map_;
+  // stores trains that pass this station in the form of [htid, #the ordinal of the station of the train]
+  // only to be enlarged in ReleaseTrain.
+  // So via this method, only released trains can be seen.
+  ism::MultiBplustree<hash_stn_name_t, ism::pair<train_hid_t, stn_num_t>> stn_hid_train_info_multimap_;
   Messenger &msgr_;
 };
 
@@ -119,15 +133,15 @@ public:
   ism::pair<ism::vector<TicketOrderType>, order_id_t>
   RefundOrder(const username_t &username, order_id_t order_id);
 
-  void cover_ticket(TicketOrderType &order, TrainType &train);
+  bool try_cover(TicketOrderType &order, TrainType &train);
 
   void clean();
 
 private:
 
   ism::Bplustree<order_id_t, TicketOrderType> order_id_order_map_;
-  ism::MultiBplustree<hash_uid_t, TicketOrderType> hash_uid_order_map_;
-  ism::MultiBplustree<hash_train_id_t, TicketOrderType> hash_train_id_order_map;
+  ism::MultiBplustree<user_hid_t, TicketOrderType> user_hid_order_map_;
+  ism::MultiBplustree<train_hid_t, TicketOrderType> train_hid_order_map;
   ism::IndexPool order_id_allocator;
   Messenger &msgr_;
 };

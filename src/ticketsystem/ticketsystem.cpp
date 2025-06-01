@@ -114,21 +114,21 @@ void TicketSystem::ReleaseTrain() {
 void TicketSystem::QueryTrain() {
   static CmdQueryTrain cmd;
   cmd.initialize(input_);
-  train_mgr_.QueryTrain(cmd.train_id, cmd.departure_date);
+  train_mgr_.QueryTrain(cmd.train_id, cmd.train_departure_date);
 }
 
 void TicketSystem::QueryTicket() {
   static CmdQueryTicket cmd;
   cmd.initialize(input_);
   train_mgr_.QueryTicket(
-    cmd.departure_stn, cmd.arrival_stn, cmd.departure_date, cmd.is_cost_order);
+    cmd.departure_stn, cmd.arrival_stn, cmd.passenger_departure_date, cmd.is_cost_order);
 }
 
 void TicketSystem::QueryTransfer() {
   static CmdQueryTransfer cmd;
   cmd.initialize(input_);
   train_mgr_.QueryTransfer(
-    cmd.departure_stn, cmd.arrival_stn, cmd.departure_date, cmd.is_cost_order);
+    cmd.departure_stn, cmd.arrival_stn, cmd.passenger_departure_date, cmd.is_cost_order);
 }
 
 void TicketSystem::BuyTicket() {
@@ -141,7 +141,8 @@ void TicketSystem::BuyTicket() {
   static TrainType train;
   train_mgr_.get_train(cmd.train_id, train);
   auto success = order_mgr_.BuyTicket(
-    cmd.username, train, cmd.departure_date, cmd.departure_stn, cmd.arrival_stn,
+    cmd.username, train, cmd.passenger_departure_date,
+    cmd.departure_stn, cmd.arrival_stn,
     cmd.ticket_num, cmd.accept_waitlist);
   if(success)
     train_mgr_.update_train(train);
@@ -162,9 +163,8 @@ void TicketSystem::RefundTicket() {
   for(auto i = pos; i > 0; --i) {
     auto &order = affected_orders[i - 1];
     if(order.is_pending()) {
-      if(order.can_be_covered(train))
-        order_mgr_.cover_ticket(order, train);
-      else break;
+      if(!order_mgr_.try_cover(order, train))
+        break;
     }
   }
   train_mgr_.update_train(train);

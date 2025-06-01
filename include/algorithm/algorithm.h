@@ -121,7 +121,7 @@ std::string itos(Integer val) {
   std::string rev;
   bool sig = true;
   if(val < 0) {
-    rev += '-';
+    val = -val;
     sig = false;
   }
   while(val > 0) {

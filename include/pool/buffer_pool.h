@@ -95,7 +95,7 @@ public:
     const char* data() const { return frame_->data(); }
 
     template <class Derived> requires (std::derived_from<Derived, T> && (max_size >= sizeof(Derived)))
-    const Derived* as() {
+    const Derived* as() const {
       if(frame_ == nullptr)
         throw invalid_page("Buffer pool error: Using invalid visitor");
       return reinterpret_cast<const Derived*>(frame_->data());

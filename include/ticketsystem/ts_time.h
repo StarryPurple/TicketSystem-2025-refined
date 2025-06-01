@@ -91,6 +91,7 @@ public:
 
 constexpr days operator"" _day(unsigned long long val) { return days(static_cast<days_count_t>(val)); }
 
+// minutes inside be always within [0, 3600)
 class TimeHM {
 private:
   minutes minute_;

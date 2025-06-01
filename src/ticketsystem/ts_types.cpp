@@ -137,7 +137,7 @@ void CmdReleaseTrain::handle(char par_name, const char *beg, size_t n) {
 void CmdQueryTrain::handle(char par_name, const char *beg, size_t n) {
   switch(par_name) {
   case 'i' : train_id       = train_id_t(beg, n); break;
-  case 'd' : departure_date = date_md_t(beg, n);  break;
+  case 'd' : train_departure_date = date_md_t(beg, n);  break;
   default : throw ism::invalid_argument("unknown parameter name.");
   }
 }
@@ -147,7 +147,7 @@ void CmdQueryTicket::handle(char par_name, const char *beg, size_t n) {
   switch(par_name) {
   case 's' : departure_stn  = stn_name_t(beg, n); break;
   case 't' : arrival_stn    = stn_name_t(beg, n); break;
-  case 'd' : departure_date = date_md_t(beg, n);  break;
+  case 'd' : passenger_departure_date = date_md_t(beg, n);  break;
   case 'p' : is_cost_order  = (strncmp(beg, "cost", n) == 0);
   default : throw ism::invalid_argument("unknown parameter name.");
   }
@@ -158,7 +158,7 @@ void CmdQueryTransfer::handle(char par_name, const char *beg, size_t n) {
   switch(par_name) {
   case 's' : departure_stn  = stn_name_t(beg, n); break;
   case 't' : arrival_stn    = stn_name_t(beg, n); break;
-  case 'd' : departure_date = date_md_t(beg, n);  break;
+  case 'd' : passenger_departure_date = date_md_t(beg, n);  break;
   case 'p' : is_cost_order  = (strncmp(beg, "cost", n) == 0);
   default : throw ism::invalid_argument("unknown parameter name.");
   }
@@ -169,7 +169,7 @@ void CmdBuyTicket::handle(char par_name, const char *beg, size_t n) {
   switch(par_name) {
   case 'u' : username        = username_t(beg, n);           break;
   case 'i' : train_id        = train_id_t(beg, n);           break;
-  case 'd' : departure_date  = date_md_t(beg, n);            break;
+  case 'd' : passenger_departure_date  = date_md_t(beg, n);            break;
   case 'f' : departure_stn   = stn_name_t(beg, n);           break;
   case 't' : arrival_stn     = stn_name_t(beg, n);           break;
   case 'n' : ticket_num      = ism::stoi<stn_num_t>(beg, n); break;
