@@ -272,6 +272,6 @@ void LocalTicketSystemTest() {
 }
 
 int main() {
-  LocalTicketSystemTest();
+  MultiBptTest();
   return 0;
 }
