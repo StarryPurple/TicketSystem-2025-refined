@@ -170,8 +170,8 @@ void CmdBuyTicket::handle(char par_name, const char *beg, size_t n) {
   case 'u' : username        = username_t(beg, n);           break;
   case 'i' : train_id        = train_id_t(beg, n);           break;
   case 'd' : passenger_departure_date  = date_md_t(beg, n);            break;
-  case 'f' : departure_stn   = stn_name_t(beg, n);           break;
-  case 't' : arrival_stn     = stn_name_t(beg, n);           break;
+  case 'f' : from_stn   = stn_name_t(beg, n);           break;
+  case 't' : dest_stn     = stn_name_t(beg, n);           break;
   case 'n' : ticket_num      = ism::stoi<stn_num_t>(beg, n); break;
   case 'q' : accept_waitlist = (strncmp(beg, "true", n) == 0);
   default : throw ism::invalid_argument("unknown parameter name.");

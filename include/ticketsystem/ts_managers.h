@@ -1,6 +1,7 @@
 #ifndef TICKETSYSTEM_TS_MANAGERS_H
 #define TICKETSYSTEM_TS_MANAGERS_H
 
+#include "array.h"
 #include "vector.h"
 #include "unordered_map.h"
 #include "bplustree.h"
@@ -10,7 +11,6 @@
 namespace ticket_system {
 
 namespace ism = insomnia;
-
 
 class Messenger {
 public:
@@ -39,9 +39,10 @@ private:
 class UserManager {
 
   struct LoggedInUserInfo {
+    access_lvl_t access_lvl;
+
     LoggedInUserInfo() = default;
     explicit LoggedInUserInfo(access_lvl_t _access_lvl) : access_lvl(_access_lvl) {}
-    access_lvl_t access_lvl;
   };
 
 public:
@@ -91,23 +92,19 @@ public:
     date_md_t passenger_departure_date,
     bool is_cost_order);
 
-  void get_train(const train_id_t &train_id, TrainType &train);
-  void get_train(const train_hid_t &train_hid, TrainType &train);
-  void update_train_status(const train_id_t &train_id, days_count_t days_count, TrainSeatStatus &status);
+  // if order can success, changes seat status immediately here.
+  TicketOrderType BuyTicket(
+    const username_t &username,
+    const train_id_t &train_id, stn_name_t from_stn, stn_name_t dest_stn,
+    date_md_t passenger_departure_date, seat_num_t ticket_num, bool accept_waitlist);
+  ism::Bplustree<ism::pair<train_hid_t, days_count_t>, TrainSeatStatus>::iterator
+  get_seat_status_iter(const train_id_t &train_id, date_md_t train_dep_date);
   void clean();
 
 private:
 
-  struct TrainScheduleType {
-    train_hid_t  train_hid;
-    days_count_t days_count;
-    TrainScheduleType() = default;
-    TrainScheduleType(train_hid_t _train_hid, days_count_t _days_count)
-      : train_hid(_train_hid), days_count(_days_count) {}
-  };
-
   ism::Bplustree<train_hid_t, TrainType> train_hid_train_map_;
-  ism::Bplustree<TrainScheduleType, TrainSeatStatus> train_hid_seats_map_;
+  ism::Bplustree<ism::pair<train_hid_t, days_count_t>, TrainSeatStatus> train_hid_seats_map_;
   // stores trains that pass this station in the form of [htid, #the ordinal of the station of the train]
   // only to be enlarged in ReleaseTrain.
   // So via this method, only released trains can be seen.
@@ -122,26 +119,22 @@ public:
   TicketOrderManager(std::filesystem::path path, Messenger &msgr);
   ~TicketOrderManager() = default;
 
-  bool BuyTicket(
-    const username_t &username, TrainType &train,
-    date_md_t passenger_departure_date,
-    stn_name_t from_stn, stn_name_t dest_stn,
-    seat_num_t ticket_num,
-    bool accept_waitlist);
+  void record_buy_ticket(TicketOrderType &ticket_order);
   void QueryOrder(const username_t &username);
-  // returns the affected_orders and the position of this order in the list.
-  ism::pair<ism::vector<TicketOrderType>, order_id_t>
-  RefundOrder(const username_t &username, order_id_t order_id);
 
-  bool try_cover(TicketOrderType &order, TrainType &train);
+  order_id_t find_order_id(const username_t &username, order_id_t order_rank);
+  ism::Bplustree<order_id_t, TicketOrderType>::iterator get_order_iter(order_id_t order_id);
+  TicketOrderType get_order(order_id_t order_id);
+  ism::vector<order_id_t> get_ticket_related_orders(const train_id_t &train_id, date_md_t train_dep_date);
 
+  order_id_t new_order_id() { return order_id_allocator.alloc(); }
   void clean();
 
 private:
 
   ism::Bplustree<order_id_t, TicketOrderType> order_id_order_map_;
-  ism::MultiBplustree<user_hid_t, TicketOrderType> user_hid_order_map_;
-  ism::MultiBplustree<train_hid_t, TicketOrderType> train_hid_order_map;
+  ism::MultiBplustree<user_hid_t, order_id_t> user_hid_order_id_map_;
+  ism::MultiBplustree<ism::pair<train_hid_t, days_count_t>, order_id_t> train_hid_order_id_map_;
   ism::IndexPool order_id_allocator;
   Messenger &msgr_;
 };

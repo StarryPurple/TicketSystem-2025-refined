@@ -138,14 +138,12 @@ void TicketSystem::BuyTicket() {
     msgr_ << -1 << '\n';
     return;
   }
-  static TrainType train;
-  train_mgr_.get_train(cmd.train_id, train);
-  auto success = order_mgr_.BuyTicket(
-    cmd.username, train, cmd.passenger_departure_date,
-    cmd.departure_stn, cmd.arrival_stn,
-    cmd.ticket_num, cmd.accept_waitlist);
-  if(success)
-    train_mgr_.update_train(train);
+  auto ticket_order = train_mgr_.BuyTicket(
+    cmd.username,
+    cmd.train_id, cmd.from_stn, cmd.dest_stn,
+    cmd.passenger_departure_date, cmd.ticket_num, cmd.accept_waitlist);
+  if(ticket_order.is_vaild())
+    order_mgr_.record_buy_ticket(ticket_order);
 }
 
 void TicketSystem::QueryOrder() {
@@ -157,24 +155,49 @@ void TicketSystem::QueryOrder() {
 void TicketSystem::RefundTicket() {
   static CmdRefundTicket cmd;
   cmd.initialize(input_);
-  auto [affected_orders, pos] = order_mgr_.RefundOrder(cmd.username, cmd.order_rank);
-  static TrainType train;
-  train_mgr_.get_train(affected_orders[pos].hash_train_id(), train);
-  for(auto i = pos; i > 0; --i) {
-    auto &order = affected_orders[i - 1];
-    if(order.is_pending()) {
-      if(!order_mgr_.try_cover(order, train))
-        break;
-    }
+  if(!user_mgr_.has_logged_in(cmd.username)) {
+    msgr_ << -1 << '\n';
+    return;
   }
-  train_mgr_.update_train(train);
+  auto target_order_id = order_mgr_.find_order_id(cmd.username, cmd.order_rank);
+  auto target_order_iter = order_mgr_.get_order_iter(target_order_id);
+  if(!target_order_iter.view().second.is_pending()) {
+    msgr_ << -1 << '\n';
+    return;
+  }
+  auto &target_order = (*target_order_iter).second;
+
+  auto seat_status_iter = train_mgr_.get_seat_status_iter(
+    target_order.train_id(), target_order.train_dep_date());
+  auto &seat_status = (*seat_status_iter).second;
+  auto order_id_list = order_mgr_.get_ticket_related_orders(
+    target_order.train_id(), target_order.train_dep_date());
+
+  // refund target order
+  target_order.set_success();
+  seat_status.restore_seat_num(target_order.ticket_num(), target_order.from_stn_ord(), target_order.dest_stn_ord());
+
+  // try to recover other orders.
+  for(auto order_id : order_id_list) {
+    if(order_id == target_order_id) continue;
+
+    auto order_iter = order_mgr_.get_order_iter(order_id);
+    auto &order = (*order_iter).second;
+    if(!order.is_pending()) continue;
+    if(order.ticket_num() >
+      seat_status.available_seat_num(order.from_stn_ord(), order.dest_stn_ord()))
+      continue;
+    order.set_success();
+    seat_status.consume_seat_num(order.ticket_num(), order.from_stn_ord(), order.dest_stn_ord());
+  }
+  msgr_ << 0 << '\n';
 }
 
 void TicketSystem::Clean() {
   user_mgr_.clean();
   train_mgr_.clean();
   order_mgr_.clean();
-  msgr_ << "0\n";
+  msgr_ << 0 << '\n';
 }
 
 void TicketSystem::Exit() {
