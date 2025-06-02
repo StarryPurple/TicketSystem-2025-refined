@@ -214,8 +214,8 @@ void LocalTicketSystemTest() {
   ts::TicketSystem ticket_system(name_base);
   auto localtest_dir = fs::current_path().parent_path() / "localtest";
 
-  std::string input_file = localtest_dir / "2.in";
-  std::string answer_file = localtest_dir / "2.out";
+  std::string input_file = localtest_dir / "3.in";
+  std::string answer_file = localtest_dir / "3.out";
   std::string output_file = localtest_dir / "0-output.txt";
 
   freopen(input_file.c_str(), "r", stdin);

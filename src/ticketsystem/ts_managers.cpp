@@ -619,7 +619,6 @@ TicketOrderManager::get_order_iter(order_id_t order_id) {
   return order_id_order_map_.find(order_id);
 }
 
-
 void TicketOrderManager::clean() {
   user_hid_order_id_map_.clear();
   train_hid_order_id_map_.clear();

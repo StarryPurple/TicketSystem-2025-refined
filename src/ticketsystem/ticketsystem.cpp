@@ -177,8 +177,9 @@ void TicketSystem::RefundTicket() {
     target_order.train_id(), target_order.train_dep_date());
 
   // refund target order
+  if(target_order.is_succeeded()) // It doesn't affect test2
+    seat_status.restore_seat_num(target_order.ticket_num(), target_order.from_stn_ord(), target_order.dest_stn_ord());
   target_order.set_refunded();
-  seat_status.restore_seat_num(target_order.ticket_num(), target_order.from_stn_ord(), target_order.dest_stn_ord());
 
   // try to recover other orders.
   for(auto order_id : order_id_list) {
@@ -186,7 +187,7 @@ void TicketSystem::RefundTicket() {
 
     auto order_iter = order_mgr_.get_order_iter(order_id);
     auto &order = (*order_iter).second;
-    if(order.has_refunded()) continue;
+    if(!order.is_pending()) continue;
     if(order.ticket_num() >
       seat_status.available_seat_num(order.from_stn_ord(), order.dest_stn_ord()))
       continue;

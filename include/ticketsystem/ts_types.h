@@ -398,6 +398,8 @@ public:
 
   bool is_vaild() const { return status_ != OrderStatus::Invalid; }
   bool has_refunded() const { return status_ == OrderStatus::Refunded; }
+  bool is_succeeded() const { return status_ == OrderStatus::Success; }
+  bool is_pending() const { return status_ == OrderStatus::Pending; }
   void set_success() { status_ = OrderStatus::Success; }
   void set_refunded() { status_ = OrderStatus::Refunded; }
   train_id_t train_id() const { return train_id_; }
