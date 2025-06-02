@@ -62,6 +62,7 @@ struct CommandBase {
     throw ism::runtime_error("Unimplemented command handler.");
   }
   void initialize(const char *ptr) {
+    static_cast<DerivedCmd*>(this)->reset();
     while(ism::advance_past(ptr, '-')) {
       char par_name = *ptr;
       ism::advance_past(ptr, ' ');
@@ -80,20 +81,24 @@ struct CmdAddUser : public CommandBase<CmdAddUser> {
   zh_name_t    zh_name;      // -n
   mail_addr_t  mail_addr;    // -m
   access_lvl_t access_lvl;   // -g
+  void reset() {}
   void handle(char par_name, const char *beg, size_t n);
 };
 struct CmdLogin : public CommandBase<CmdLogin> {
   username_t username; // -u
   password_t password; // -p
+  void reset() {}
   void handle(char par_name, const char *beg, size_t n);
 };
 struct CmdLogout : public CommandBase<CmdLogout> {
   username_t username; // -u
+  void reset() {}
   void handle(char par_name, const char *beg, size_t n);
 };
 struct CmdQueryProfile : public CommandBase<CmdQueryProfile> {
   username_t cur_username; // -c
   username_t tar_username; // -u
+  void reset() {}
   void handle(char par_name, const char *beg, size_t n);
 };
 struct CmdModifyProfile : public CommandBase<CmdModifyProfile> {
@@ -107,6 +112,7 @@ struct CmdModifyProfile : public CommandBase<CmdModifyProfile> {
   bool has_zh_name;
   bool has_mail_addr;
   bool has_access_lvl;
+  void reset() { has_password = has_zh_name = has_mail_addr = has_access_lvl = false; }
   void handle(char par_name, const char *beg, size_t n);
 };
 struct CmdAddTrain : public CommandBase<CmdAddTrain> {
@@ -121,19 +127,23 @@ struct CmdAddTrain : public CommandBase<CmdAddTrain> {
   date_md_t    begin_date;         // -d
   date_md_t    final_date;         // -d
   train_type_t train_type;         // -y
+  void reset() {}
   void handle(char par_name, const char *beg, size_t n);
 };
 struct CmdDeleteTrain : public CommandBase<CmdDeleteTrain> {
   train_id_t train_id; // -i
+  void reset() {}
   void handle(char par_name, const char *beg, size_t n);
 };
 struct CmdReleaseTrain : public CommandBase<CmdReleaseTrain> {
   train_id_t train_id; // -i
+  void reset() {}
   void handle(char par_name, const char *beg, size_t n);
 };
 struct CmdQueryTrain : public CommandBase<CmdQueryTrain> {
   train_id_t train_id;       // -i
   date_md_t  train_departure_date; // -d
+  void reset() {}
   void handle(char par_name, const char *beg, size_t n);
 };
 struct CmdQueryTicket : public CommandBase<CmdQueryTicket> {
@@ -141,6 +151,7 @@ struct CmdQueryTicket : public CommandBase<CmdQueryTicket> {
   stn_name_t arrival_stn;    // -t
   date_md_t  passenger_departure_date; // -d
   bool is_cost_order;        // -p?
+  void reset() { is_cost_order = false; }
   void handle(char par_name, const char *beg, size_t n);
 };
 struct CmdQueryTransfer : public CommandBase<CmdQueryTransfer> {
@@ -148,6 +159,7 @@ struct CmdQueryTransfer : public CommandBase<CmdQueryTransfer> {
   stn_name_t arrival_stn;    // -t
   date_md_t  passenger_departure_date; // -d
   bool is_cost_order;        // -p?
+  void reset() { is_cost_order = false; }
   void handle(char par_name, const char *beg, size_t n);
 };
 struct CmdBuyTicket : public CommandBase<CmdBuyTicket> {
@@ -158,15 +170,18 @@ struct CmdBuyTicket : public CommandBase<CmdBuyTicket> {
   stn_name_t dest_stn;    // -t
   seat_num_t ticket_num;     // -n
   bool accept_waitlist;      // -q?
+  void reset() { accept_waitlist = false; }
   void handle(char par_name, const char *beg, size_t n);
 };
 struct CmdQueryOrder : public CommandBase<CmdQueryOrder> {
   username_t username; // -u
+  void reset() {}
   void handle(char par_name, const char *beg, size_t n);
 };
 struct CmdRefundTicket : public CommandBase<CmdRefundTicket> {
   username_t username;   // -u
   order_id_t order_rank; // -n?
+  void reset() { order_rank = 1; }
   void handle(char par_name, const char *beg, size_t n);
 };
 // struct CmdClean {};
@@ -346,8 +361,6 @@ private:
 
 class TicketOrderManager;
 
-// The ordering is the reverse of order_id:
-// The latest order comes first.
 class TicketOrderType {
   friend TicketOrderManager;
 
@@ -384,7 +397,7 @@ public:
 
 
   bool is_vaild() const { return status_ != OrderStatus::Invalid; }
-  bool is_pending() const { return status_ == OrderStatus::Pending; }
+  bool has_refunded() const { return status_ == OrderStatus::Refunded; }
   void set_success() { status_ = OrderStatus::Success; }
   void set_refunded() { status_ = OrderStatus::Refunded; }
   train_id_t train_id() const { return train_id_; }
@@ -393,9 +406,11 @@ public:
   stn_num_t from_stn_ord() const { return from_stn_ord_; }
   stn_num_t dest_stn_ord() const { return dest_stn_ord_; }
 
+  /*
   auto operator<=>(const TicketOrderType &other) const {
-    return other.order_id_ <=> order_id_;
+    return order_id_ <=> other.order_id_;
   }
+  */
 
   std::string string() const {
     std::string ret;
@@ -412,7 +427,7 @@ public:
     ret += from_date_time_.string(); ret += " -> ";
     ret += dest_stn_.c_str(); ret += ' ';
     ret += dest_date_time_.string(); ret += ' ';
-    ret += ism::itos(single_price_ * ticket_num_); ret += ' ';
+    ret += ism::itos(single_price_); ret += ' ';
     ret += ism::itos(ticket_num_);
     return ret;
   }

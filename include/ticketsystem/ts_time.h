@@ -146,6 +146,10 @@ public:
   explicit constexpr DateMD(days day) : day_(day) {}
   explicit constexpr DateMD(const char *str, size_t n) {
     if(n != 5) throw insomnia::invalid_argument("invalid length for a DateMD string.");
+    if(str[1] != '6' && str[1] != '7' && str[1] != '8') {
+      day_ = days(-1); // date -inf / inf. who knows?
+      return;
+    }
     day_ = days(10 * (str[3] - '0') + (str[4] - '0') - 1);
     if(str[1] == '7')      day_ += DAY0701;
     else if(str[1] == '8') day_ += DAY0801;

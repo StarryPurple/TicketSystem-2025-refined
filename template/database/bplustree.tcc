@@ -8,7 +8,7 @@ namespace insomnia {
 template <class KeyT, class ValueT, class KeyCompare>
 Bplustree<KeyT, ValueT, KeyCompare>::Bplustree(
   const std::filesystem::path &path, int buffer_capacity, int replacer_k_arg)
-    : buf_pool_(path.string() + ".bpt", buffer_capacity, replacer_k_arg) {
+    : buf_pool_(path.string() + "-bpt", buffer_capacity, replacer_k_arg) {
   if(!buf_pool_.read_meta(&root_ptr_))
     root_ptr_ = NULL_PAGE_ID;
 }

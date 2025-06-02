@@ -5,9 +5,9 @@
 namespace ticket_system {
 
 TicketSystem::TicketSystem(std::filesystem::path path)
-: user_mgr_(path.assign(".user"), msgr_),
-  train_mgr_(path.assign(".train"), msgr_),
-  order_mgr_(path.assign(".order"), msgr_) {
+: user_mgr_(path.string() + "-user", msgr_),
+  train_mgr_(path.string() + "-train", msgr_),
+  order_mgr_(path.string() +"-order", msgr_) {
   command_hashmap_[hash("add_user")]       = &TicketSystem::AddUser;
   command_hashmap_[hash("login")]          = &TicketSystem::Login;
   command_hashmap_[hash("logout")]         = &TicketSystem::Logout;
@@ -34,6 +34,9 @@ void TicketSystem::run() {
   const char *stmp_beg = input_ + 1;
   const char *stmp_end = token_ - 1;
   timestamp_ = ism::stoi<timestamp_t>(stmp_beg, stmp_end - stmp_beg);
+  if(timestamp_ == 7445) {
+    int a = 0; a += 1;
+  }
   msgr_.append(input_, token_ - input_ + 1); // with the ' ' .
   ism::advance_past(token_, ' ');  // token = cmd name
   const char *cmd_name = token_;
@@ -161,7 +164,7 @@ void TicketSystem::RefundTicket() {
   }
   auto target_order_id = order_mgr_.find_order_id(cmd.username, cmd.order_rank);
   auto target_order_iter = order_mgr_.get_order_iter(target_order_id);
-  if(!target_order_iter.view().second.is_pending()) {
+  if(target_order_iter.view().second.has_refunded()) {
     msgr_ << -1 << '\n';
     return;
   }
@@ -174,7 +177,7 @@ void TicketSystem::RefundTicket() {
     target_order.train_id(), target_order.train_dep_date());
 
   // refund target order
-  target_order.set_success();
+  target_order.set_refunded();
   seat_status.restore_seat_num(target_order.ticket_num(), target_order.from_stn_ord(), target_order.dest_stn_ord());
 
   // try to recover other orders.
@@ -183,7 +186,7 @@ void TicketSystem::RefundTicket() {
 
     auto order_iter = order_mgr_.get_order_iter(order_id);
     auto &order = (*order_iter).second;
-    if(!order.is_pending()) continue;
+    if(order.has_refunded()) continue;
     if(order.ticket_num() >
       seat_status.available_seat_num(order.from_stn_ord(), order.dest_stn_ord()))
       continue;

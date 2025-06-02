@@ -44,7 +44,7 @@ inline constexpr int BUF_CAPA = 512, K_DIST = 4;
 /************ UserManager ************/
 
 UserManager::UserManager(std::filesystem::path path, Messenger &msgr)
-: user_hid_user_map_(path.string() + ".huid", BUF_CAPA, K_DIST), msgr_(msgr) {}
+: user_hid_user_map_(path.string() + "-huid", BUF_CAPA, K_DIST), msgr_(msgr) {}
 
 void UserManager::AddUser(const username_t &cur_username, UserType &tar_user) {
   if(user_hid_user_map_.empty()) {
@@ -172,9 +172,9 @@ void UserManager::clean() {
 /************ TrainManager ***********/
 
 TrainManager::TrainManager(std::filesystem::path path, Messenger &msgr)
-: train_hid_train_map_(path.string() + ".htid", BUF_CAPA, K_DIST),
-  train_hid_seats_map_(path.string() + ".htid_seats", BUF_CAPA, K_DIST),
-  stn_hid_train_info_multimap_(path.string() + ".stn_htid", BUF_CAPA, K_DIST),
+: train_hid_train_map_(path.string() + "-htid", BUF_CAPA, K_DIST),
+  train_hid_seats_map_(path.string() + "-htid_seats", BUF_CAPA, K_DIST),
+  stn_hid_train_info_multimap_(path.string() + "-stn_htid", BUF_CAPA, K_DIST),
   msgr_(msgr) {}
 
 void TrainManager::AddTrain(const TrainType &train) {
@@ -541,7 +541,7 @@ TicketOrderType TrainManager::BuyTicket(
   auto available_seats = seat_it.view().second.available_seat_num(from_ord, dest_ord);
   if(available_seats < ticket_num) {
     if(accept_waitlist) {
-      msgr_ << "pending\n";
+      msgr_ << "queue\n";
       return {
         TicketOrderType::OrderStatus::Pending, username, train_id, from_stn, dest_stn,
         date_time_t(train_departure_date, train.start_time_) + train.departure_time_list_[from_ord],
@@ -574,10 +574,10 @@ void TrainManager::clean() {
 /******** TicketOrderManager *********/
 
 TicketOrderManager::TicketOrderManager(std::filesystem::path path, Messenger &msgr)
-: order_id_order_map_(path.string() + ".otime", BUF_CAPA, K_DIST),
-  user_hid_order_id_map_(path.string() + ".huid_order", BUF_CAPA, K_DIST),
-  train_hid_order_id_map_(path.string() + ".htid_order", BUF_CAPA, K_DIST),
-  order_id_allocator(path.string() + ".oid_alloc"),
+: order_id_order_map_(path.string() + "-otime", BUF_CAPA, K_DIST),
+  user_hid_order_id_map_(path.string() + "-huid_order", BUF_CAPA, K_DIST),
+  train_hid_order_id_map_(path.string() + "-htid_order", BUF_CAPA, K_DIST),
+  order_id_allocator(path.string() + "-oid_alloc"),
   msgr_(msgr) {}
 
 void TicketOrderManager::record_buy_ticket(TicketOrderType &ticket_order) {

@@ -78,6 +78,7 @@ void MultiBptTest() {
     }
   }
 }
+
 void SaferMultiBptTest() {
   try {
     MultiBptTest();
@@ -196,12 +197,41 @@ void MultitaskBptTest() {
 
 namespace ts = ticket_system;
 
-int main() {
+void TicketSystemTest() {
+  auto data_dir = fs::current_path() / "ts_data";
+  // fs::remove_all(data_dir);
+  fs::create_directory(data_dir);
+  auto name_base = data_dir / "ts";
+  ts::TicketSystem ticket_system(name_base);
+  ticket_system.work_loop();
+}
+
+void LocalTicketSystemTest() {
   auto data_dir = fs::current_path() / "ts_test";
   fs::remove_all(data_dir);
   fs::create_directory(data_dir);
-  auto name_base = data_dir / "A";
+  auto name_base = data_dir / "ts";
   ts::TicketSystem ticket_system(name_base);
+  auto localtest_dir = fs::current_path().parent_path() / "localtest";
+
+  std::string input_file = localtest_dir / "2.in";
+  std::string answer_file = localtest_dir / "2.out";
+  std::string output_file = localtest_dir / "0-output.txt";
+
+  freopen(input_file.c_str(), "r", stdin);
+  freopen(output_file.c_str(), "w", stdout);
   ticket_system.work_loop();
+  fclose(stdin);
+  fclose(stdout);
+
+  std::string diff_file = localtest_dir / "0-diff.txt";
+
+  std::string diff_cmd = "diff -bB " + output_file + " " + answer_file + " > " + diff_file;
+  system(diff_cmd.c_str());
+  fclose(stdout);
+}
+
+int main() {
+  LocalTicketSystemTest();
   return 0;
 }

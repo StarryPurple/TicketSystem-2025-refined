@@ -133,8 +133,13 @@ public:
 private:
 
   ism::Bplustree<order_id_t, TicketOrderType> order_id_order_map_;
-  ism::MultiBplustree<user_hid_t, order_id_t> user_hid_order_id_map_;
-  ism::MultiBplustree<ism::pair<train_hid_t, days_count_t>, order_id_t> train_hid_order_id_map_;
+  ism::MultiBplustree<
+    user_hid_t, order_id_t,
+    std::less<user_hid_t>, std::greater<order_id_t>>
+  user_hid_order_id_map_; // for query: the latest orders come first.
+  ism::MultiBplustree<
+    ism::pair<train_hid_t, days_count_t>, order_id_t>
+  train_hid_order_id_map_; // for refund: the earliest orders come first.
   ism::IndexPool order_id_allocator;
   Messenger &msgr_;
 };
