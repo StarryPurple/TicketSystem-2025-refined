@@ -15,6 +15,9 @@ namespace ism = insomnia;
 class Messenger {
 public:
 
+  Messenger() = default;
+  ~Messenger() { flush(); }
+
   Messenger& operator<<(char msg);
   Messenger& operator<<(const char *msg);
   Messenger& operator<<(const std::string &msg);
@@ -30,6 +33,7 @@ public:
   [[nodiscard]]
   std::string str() const { return msg_; }
   void reset() { msg_.clear(); }
+  void flush() { std::cout.flush(); std::cerr.flush(); }
 
 private:
   std::string msg_;

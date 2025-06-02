@@ -74,7 +74,7 @@ bool Bplustree<KeyT, ValueT, KeyCompare>::insert(const KeyT &key, const ValueT &
     }
     auto &parent_visitor = visitors.back();
     auto parent_node = parent_visitor.template as_mut<Internal>();
-    auto pos = parent_node->locate_key(leaf->key(0), key_compare_);
+    auto pos = parent_node->locate_key(rht_leaf->key(0), key_compare_);
     parent_node->insert(pos + 1, rht_leaf->key(0), rht_ptr);
   }
 
@@ -92,7 +92,7 @@ bool Bplustree<KeyT, ValueT, KeyCompare>::insert(const KeyT &key, const ValueT &
     node->split(rht_node);
     auto &parent_visitor = visitors.back();
     auto parent_node = parent_visitor.template as_mut<Internal>();
-    auto pos = parent_node->locate_key(node->key(0), key_compare_);
+    auto pos = parent_node->locate_key(rht_node->key(0), key_compare_);
     parent_node->insert(pos + 1, rht_node->key(0), rht_ptr);
   }
 

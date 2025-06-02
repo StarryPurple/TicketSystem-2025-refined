@@ -220,6 +220,9 @@ void TrainManager::ReleaseTrain(const train_id_t &train_id) {
       train.stn_list_[i].hash(), ism::pair<train_hid_t, stn_num_t>(htid, i));
   static TrainSeatStatus train_seat_status;
   train_seat_status.initialize(train.max_seat_num_, train.stn_num_);
+  if(train_id == "Afterastrangesad") {
+    int a = 0; ++a;
+  }
   for(days_count_t i = train.start_date_.count(); i <= train.final_date_.count(); ++i)
     train_hid_seats_map_.insert(
       ism::pair<train_hid_t, days_count_t>(htid, i), train_seat_status);
@@ -317,7 +320,7 @@ void TrainManager::QueryTicket(
     auto time = train.arrival_time_list_[dest_ord] - train.departure_time_list_[from_ord];
     auto cost = train.accumulative_price_list_[dest_ord] - train.accumulative_price_list_[from_ord];
     auto seats_it = train_hid_seats_map_.find(
-      ism::make_pair(train.hash(), train_departure_date.count()));
+      ism::pair<train_hid_t, days_count_t>(train.hash(), train_departure_date.count()));
     auto &train_seat_status = (*seats_it).second;
     auto available_seat_num = train_seat_status.available_seat_num(from_ord, dest_ord);
     Messenger tmp_msgr;
@@ -389,8 +392,8 @@ void TrainManager::QueryTransfer(
     stn_num_t self_ord;
     stn_num_t other_ord;
     InfoType() = default;
-    InfoType(const TrainType &_train, stn_num_t _self_ord, stn_num_t _ord)
-      : train(_train), self_ord(_self_ord), other_ord(_ord) {}
+    InfoType(const TrainType &_train, stn_num_t _self_ord, stn_num_t _other_ord)
+      : train(_train), self_ord(_self_ord), other_ord(_other_ord) {}
 
     stn_name_t stn_name() const { return train.stn_list_[other_ord]; }
     hash_stn_name_t stn_hid() const { return train.stn_list_[other_ord].hash(); }
@@ -433,7 +436,7 @@ void TrainManager::QueryTransfer(
     for(size_t i = from_l; i <= from_r; ++i)
       for(size_t j = dest_l; j <= dest_r; ++j) {
         const auto &[from_train, stn_ord_SS, stn_ord_ST] = from_info_list[i];
-        const auto &[dest_train, stn_ord_TS, stn_ord_TT] = dest_info_list[j];
+        const auto &[dest_train, stn_ord_TT, stn_ord_TS] = dest_info_list[j];
 
         // check date
         auto from_train_dep_date =
@@ -450,7 +453,9 @@ void TrainManager::QueryTransfer(
           passenger_dep_T_date += days(1);
         auto dest_train_dep_date =
           dest_train.get_train_departure_date(passenger_dep_T_date, stn_ord_TS);
-        if(!dest_train.check_train_departure_date(dest_train_dep_date)) continue;
+        if(dest_train.final_date_ < dest_train_dep_date) continue;
+        if(dest_train.start_date_ > dest_train_dep_date)
+          dest_train_dep_date = dest_train.start_date_; // do not use passenger_dep_T_date again.
         date_time_t date_time_TS =
           date_time_t(dest_train_dep_date, dest_train.start_time_) + dest_train.departure_time_list_[stn_ord_TS];
         date_time_t date_time_TT =
@@ -459,7 +464,20 @@ void TrainManager::QueryTransfer(
         auto cost_here = from_train.cost(stn_ord_SS, stn_ord_ST) + dest_train.cost(stn_ord_TS, stn_ord_TT);
         auto time_here = minutes(date_time_TT.count() - date_time_SS.count());
 
-        if(!success || (is_cost_order && cost_here < cost) || (!is_cost_order && time_here < time)) {
+        if(!success || (is_cost_order && [&] {
+            if(cost_here != cost) return cost_here < cost;
+            if(time_here != time) return time_here < time;
+            if(from_train.train_id_ != result_info.from_train.train_id_)
+              return from_train.train_id_ < result_info.from_train.train_id_;
+            return dest_train.train_id_ < result_info.dest_train.train_id_;
+          } ()) || (!is_cost_order && [&] {
+          if(time_here != time) return time_here < time;
+          if(cost_here != cost) return cost_here < cost;
+          if(from_train.train_id_ != result_info.from_train.train_id_)
+            return from_train.train_id_ < result_info.from_train.train_id_;
+          return dest_train.train_id_ < result_info.dest_train.train_id_;
+          } ())) {
+
           success = true;
           cost = cost_here;
           time = time_here;

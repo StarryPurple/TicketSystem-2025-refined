@@ -52,7 +52,7 @@ vector<T>::vector(const vector &other) {
   if constexpr(std::is_trivial_v<T> && std::is_move_constructible_v<T>)
     memcpy(_beg, other._beg, other.size() * sizeof(T));
   else
-    for(T *here = _beg, there = other._beg; there != other._end; ++here, ++there)
+    for(T *here = _beg, *there = other._beg; there != other._end; ++here, ++there)
       new (here) T(*there);
 }
 

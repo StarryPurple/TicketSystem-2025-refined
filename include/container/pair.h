@@ -11,12 +11,11 @@ struct pair {
   template <class U1, class U2>
   constexpr pair(U1 &&x, U2 &&y)
     : first(std::forward<U1>(x)), second(std::forward<U2>(y)) {}
+  constexpr pair(std::initializer_list<std::decay_t<T1>> il1,
+                 std::initializer_list<std::decay_t<T2>> il2)
+    : first(*il1.begin()), second(*il2.begin()) {}
 
-  constexpr bool operator<(const pair &other) const {
-    if(first < other.first) return true;
-    if(first > other.first) return false;
-    return second < other.second;
-  }
+  constexpr auto operator<=>(const pair &other) const = default;
 };
 
 template <class T1, class T2>

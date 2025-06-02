@@ -206,29 +206,69 @@ void TicketSystemTest() {
   ticket_system.work_loop();
 }
 
+ism::vector<ism::pair<std::string, ism::vector<std::string>>> tests = {
+  {std::string("basic_1"), ism::vector<std::string>{"1"}},
+  {std::string("basic_2"), ism::vector<std::string>{"2"}},
+  {std::string("basic_3"), ism::vector<std::string>{"3", "4", "5", "6", "7"}},
+  {std::string("basic_4"), ism::vector<std::string>{"8", "9", "10", "11", "12"}},
+  {std::string("basic_5"), ism::vector<std::string>{"13", "14", "15", "16", "17", "18", "19", "20", "21", "22"}},
+  {std::string("basic_6"), ism::vector<std::string>{"23", "24", "25", "26", "27", "28", "29", "30", "31", "32"}},
+  {std::string("basic_extra"), ism::vector<std::string>{"33", "34", "35", "36", "37", "38", "39", "40", "41", "42"}},
+  {std::string("pressure_1_easy"), ism::vector<std::string>{"43", "44", "45", "46", "47", "48", "49", "50", "51", "52"}},
+  {std::string("pressure_2_easy"), ism::vector<std::string>{"53", "54", "55", "56", "57", "58", "59", "60", "61", "62"}},
+  {std::string("pressure_3_easy"), ism::vector<std::string>{"63", "64", "65", "66", "67", "68", "69", "70", "71", "72"}},
+  {std::string("pressure_1_hard"), ism::vector<std::string>{"73", "74", "75", "76", "77", "78", "79", "80", "81", "82"}},
+  {std::string("pressure_2_hard"), ism::vector<std::string>{"83", "84", "85", "86", "87", "88", "89", "90", "91", "92"}},
+  {std::string("pressure_3_hard"), ism::vector<std::string>{"93", "94", "95", "96", "97", "98", "99", "100", "101", "102"}}
+};
+
 void LocalTicketSystemTest() {
-  auto data_dir = fs::current_path() / "ts_test";
-  fs::remove_all(data_dir);
-  fs::create_directory(data_dir);
+  auto data_dir = fs::current_path() / "ts_localtest";
   auto name_base = data_dir / "ts";
-  ts::TicketSystem ticket_system(name_base);
   auto localtest_dir = fs::current_path().parent_path() / "localtest";
 
-  std::string input_file = localtest_dir / "3.in";
-  std::string answer_file = localtest_dir / "3.out";
+  std::string result_file = localtest_dir / "0-result.txt";
   std::string output_file = localtest_dir / "0-output.txt";
+  std::string differ_file = localtest_dir / "0-differ.txt";
+  system(("echo \"Test starts.\" >" + result_file).c_str());
 
-  freopen(input_file.c_str(), "r", stdin);
-  freopen(output_file.c_str(), "w", stdout);
-  ticket_system.work_loop();
-  fclose(stdin);
-  fclose(stdout);
+  for(const auto &[name, pack] : tests) {
+    fs::remove_all(data_dir);
+    fs::create_directory(data_dir);
+    system(("echo \"-------Starting test " + name + "-------\" >> " + result_file).c_str());
 
-  std::string diff_file = localtest_dir / "0-diff.txt";
+    for(const auto &test_no : pack) {
+      std::string input_file = localtest_dir / (test_no + ".in");
+      std::string answer_file = localtest_dir / (test_no + ".out");
 
-  std::string diff_cmd = "diff -bB " + output_file + " " + answer_file + " > " + diff_file;
-  system(diff_cmd.c_str());
-  fclose(stdout);
+      std::ifstream input(input_file);
+      std::ofstream output(output_file);
+
+      auto *old_cin_buf = std::cin.rdbuf();
+      auto *old_cout_buf = std::cout.rdbuf();
+
+      std::cin.rdbuf(input.rdbuf());
+      std::cout.rdbuf(output.rdbuf());
+
+      ts::TicketSystem ticket_system(name_base);
+      ticket_system.work_loop();
+
+      std::cin.rdbuf(old_cin_buf);
+      std::cout.rdbuf(old_cout_buf);
+
+      std::string diff_cmd = "diff -bB " + output_file + " " + answer_file + " > " + differ_file;
+      system(diff_cmd.c_str());
+      if(fs::file_size(differ_file) == 0)
+        system(("echo \"Test point " + test_no + " passed.\" >> " + result_file).c_str());
+      else {
+        std::cout << "Test point " + test_no + " failed. \nCheck differ file for more details." << std::endl;
+        system(("echo \"Test point " + test_no + " failed.\" >> " + result_file).c_str());
+        system(("echo \"Check differ file for more details.\" >> " + result_file).c_str());
+        break;
+      }
+    }
+    system(("echo \"\" >> " + result_file).c_str());
+  }
 }
 
 int main() {

@@ -10,7 +10,6 @@ public:
 
   using value_type = T;
 
-
   class const_iterator;
   class iterator {
     friend const_iterator;

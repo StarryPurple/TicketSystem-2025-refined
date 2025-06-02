@@ -28,14 +28,16 @@ TicketSystem::TicketSystem(std::filesystem::path path)
 
 void TicketSystem::run() {
   std::cin.getline(input_, sizeof(input_));
+  if(std::cin.eof())
+    system_status_ = SystemStatus::StatEnd;
   if(strlen(input_) == 0) return;
   token_ = input_;                 // *token = '['
   ism::advance_until(token_, ' '); // *token = ' '
   const char *stmp_beg = input_ + 1;
   const char *stmp_end = token_ - 1;
   timestamp_ = ism::stoi<timestamp_t>(stmp_beg, stmp_end - stmp_beg);
-  if(timestamp_ == 7445) {
-    int a = 0; a += 1;
+  if(timestamp_ == 53642) {
+    int a = 0; ++a;
   }
   msgr_.append(input_, token_ - input_ + 1); // with the ' ' .
   ism::advance_past(token_, ' ');  // token = cmd name
@@ -152,6 +154,10 @@ void TicketSystem::BuyTicket() {
 void TicketSystem::QueryOrder() {
   static CmdQueryOrder cmd;
   cmd.initialize(input_);
+  if(!user_mgr_.has_logged_in(cmd.username)) {
+    msgr_ << -1 << '\n';
+    return;
+  }
   order_mgr_.QueryOrder(cmd.username);
 }
 
@@ -163,6 +169,10 @@ void TicketSystem::RefundTicket() {
     return;
   }
   auto target_order_id = order_mgr_.find_order_id(cmd.username, cmd.order_rank);
+  if(target_order_id == INVALID_ORDER_ID) {
+    msgr_ << -1 << '\n';
+    return;
+  }
   auto target_order_iter = order_mgr_.get_order_iter(target_order_id);
   if(target_order_iter.view().second.has_refunded()) {
     msgr_ << -1 << '\n';
@@ -206,7 +216,7 @@ void TicketSystem::Clean() {
 
 void TicketSystem::Exit() {
   msgr_ << "bye\n";
-  system_status_ = SystemStatus::StatShut;
+  system_status_ = SystemStatus::StatEnd;
 }
 
 }

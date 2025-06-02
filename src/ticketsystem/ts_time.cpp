@@ -1,4 +1,5 @@
 #include "ts_time.h"
+#include "algorithm.h"
 
 namespace ticket_system {
 
@@ -6,10 +7,10 @@ std::string TimeHM::string() const {
   std::string res;
   auto hour = count() / 60, minute = count() - 60 * hour;
   if(hour < 10) res += '0';
-  res += std::to_string(hour);
+  res += ism::itos(hour);
   res += ':';
   if(minute < 10) res += '0';
-  res += std::to_string(minute);
+  res += ism::itos(minute);
   return res;
 }
 
@@ -26,7 +27,7 @@ std::string DateMD::string() const {
   }
   day += 1_day;
   if(day < 10_day) res += '0';
-  res += std::to_string(day.count());
+  res += ism::itos(day.count());
   return res;
 }
 

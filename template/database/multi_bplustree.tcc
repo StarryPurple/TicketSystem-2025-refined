@@ -75,7 +75,7 @@ bool MultiBplustree<KeyT, ValueT, KeyCompare, ValueCompare>::insert(const KeyT &
     }
     auto &parent_visitor = visitors.back();
     auto parent_node = parent_visitor.template as_mut<Internal>();
-    auto pos = parent_node->locate_pair(leaf->key(0), leaf->value(0), kv_compare_);
+    auto pos = parent_node->locate_pair(rht_leaf->key(0), rht_leaf->value(0), kv_compare_);
     parent_node->insert(pos + 1, rht_leaf->key(0), rht_leaf->value(0), rht_ptr);
   }
   leaf_visitor.drop();
@@ -92,7 +92,7 @@ bool MultiBplustree<KeyT, ValueT, KeyCompare, ValueCompare>::insert(const KeyT &
     node->split(rht_node);
     auto &parent_visitor = visitors.back();
     auto parent_node = parent_visitor.template as_mut<Internal>();
-    auto pos = parent_node->locate_pair(node->key(0), node->value(0), kv_compare_);
+    auto pos = parent_node->locate_pair(rht_node->key(0), rht_node->value(0), kv_compare_);
     parent_node->insert(pos + 1, rht_node->key(0), rht_node->value(0), rht_ptr);
   }
   auto root_visitor = std::move(visitors.back());

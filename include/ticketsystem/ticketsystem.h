@@ -14,9 +14,10 @@ namespace ism = insomnia;
 class TicketSystem {
 
 public:
-  TicketSystem(std::filesystem::path path);
+  explicit TicketSystem(std::filesystem::path path);
   void work_loop() {
     do run(); while(system_status_ == SystemStatus::StatGood);
+    msgr_.flush();
   }
 
 private:
@@ -31,7 +32,7 @@ private:
 
   enum class SystemStatus {
     StatGood,
-    StatShut
+    StatEnd
   };
 
   using CommandFunc = void (TicketSystem::*)();
