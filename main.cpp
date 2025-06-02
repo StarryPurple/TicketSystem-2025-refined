@@ -48,7 +48,7 @@ namespace fs = std::filesystem;
 
 void MultiBptTest() {
   using str_t = ism::array<char, 64>;
-  using index_t = uint64_t;
+  using index_t = str_t;
   using value_t = int;
   using MulBpt_t = ism::MultiBplustree<index_t, value_t>;
 
@@ -68,13 +68,13 @@ void MultiBptTest() {
     std::cin >> opt;
     if(opt[0] == 'i') {
       std::cin >> index >> value;
-      mul_bpt.insert(hash1(index), value);
+      mul_bpt.insert(index, value);
     } else if(opt[0] == 'f') {
       std::cin >> index;
-      print_list(mul_bpt.search(hash1(index)));
+      print_list(mul_bpt.search(index));
     } else if(opt[0] == 'd') {
       std::cin >> index >> value;
-      mul_bpt.remove(hash1(index), value);
+      mul_bpt.remove(index, value);
     }
   }
 }
