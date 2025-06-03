@@ -17,7 +17,7 @@ public:
   explicit TicketSystem(std::filesystem::path path);
   void work_loop() {
     do run(); while(system_status_ == SystemStatus::StatGood);
-    msgr_.flush();
+    msgr_.flush(); // Huh.
   }
 
 private:

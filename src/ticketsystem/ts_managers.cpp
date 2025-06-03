@@ -60,7 +60,7 @@ void UserManager::AddUser(const username_t &cur_username, UserType &tar_user) {
     return;
   } else cur_access_lvl = it->second.access_lvl;
   if(cur_access_lvl <= tar_user.access_lvl_) {
-    msgr_ << 0 << '\n';
+    msgr_ << -1 << '\n';
     return;
   }
   user_hid_user_map_.insert(tar_user.hash(), tar_user);
@@ -220,9 +220,6 @@ void TrainManager::ReleaseTrain(const train_id_t &train_id) {
       train.stn_list_[i].hash(), ism::pair<train_hid_t, stn_num_t>(htid, i));
   static TrainSeatStatus train_seat_status;
   train_seat_status.initialize(train.max_seat_num_, train.stn_num_);
-  if(train_id == "Afterastrangesad") {
-    int a = 0; ++a;
-  }
   for(days_count_t i = train.start_date_.count(); i <= train.final_date_.count(); ++i)
     train_hid_seats_map_.insert(
       ism::pair<train_hid_t, days_count_t>(htid, i), train_seat_status);
@@ -370,6 +367,7 @@ void TrainManager::QueryTransfer(
   struct ResultInfoType {
     TrainType from_train, dest_train;
     date_time_t date_time_SS, date_time_ST, date_time_TS, date_time_TT;
+    date_md_t from_train_dep_date, dest_train_dep_date;
     stn_num_t stn_ord_SS, stn_ord_ST, stn_ord_TS, stn_ord_TT;
     stn_name_t interval_stn;
 
@@ -438,6 +436,8 @@ void TrainManager::QueryTransfer(
         const auto &[from_train, stn_ord_SS, stn_ord_ST] = from_info_list[i];
         const auto &[dest_train, stn_ord_TT, stn_ord_TS] = dest_info_list[j];
 
+        if(from_train.hash() == dest_train.hash()) continue;
+
         // check date
         auto from_train_dep_date =
           from_train.get_train_departure_date(passenger_departure_date, stn_ord_SS);
@@ -487,6 +487,8 @@ void TrainManager::QueryTransfer(
           result_info.date_time_ST = date_time_ST;
           result_info.date_time_TS = date_time_TS;
           result_info.date_time_TT = date_time_TT;
+          result_info.from_train_dep_date = from_train_dep_date;
+          result_info.dest_train_dep_date = dest_train_dep_date;
           result_info.interval_stn = interval_stn_name;
           result_info.stn_ord_SS = stn_ord_SS;
           result_info.stn_ord_ST = stn_ord_ST;
@@ -504,12 +506,12 @@ void TrainManager::QueryTransfer(
 
   const auto seat_num_list_S_it =
     train_hid_seats_map_.find(
-      ism::make_pair(result_info.from_train.hash(), result_info.date_time_SS.date_md().count()));
+      ism::make_pair(result_info.from_train.hash(), result_info.from_train_dep_date.count()));
   auto seat_num_S = (*seat_num_list_S_it).second.available_seat_num(
     result_info.stn_ord_SS, result_info.stn_ord_ST);
   const auto seat_num_list_T_it =
   train_hid_seats_map_.find(
-    ism::make_pair(result_info.dest_train.hash(), result_info.date_time_TS.date_md().count()));
+    ism::make_pair(result_info.dest_train.hash(), result_info.dest_train_dep_date.count()));
   auto seat_num_T = (*seat_num_list_T_it).second.available_seat_num(
     result_info.stn_ord_TS, result_info.stn_ord_TT);
 
@@ -537,6 +539,12 @@ TicketOrderType TrainManager::BuyTicket(
   auto thid = train_id.hash();
   const auto train_it = train_hid_train_map_.find(thid);
   const auto &train = (*train_it).second;
+
+  if(ticket_num > train.max_seat_num_) {
+    msgr_ << -1 << '\n';
+    return {};
+  }
+
   stn_num_t from_ord = train.stn_num_ + 1;
   stn_num_t dest_ord = train.stn_num_ + 1;
   auto from_stn_hash = from_stn.hash();
@@ -546,7 +554,7 @@ TicketOrderType TrainManager::BuyTicket(
     if(stn_hash == from_stn_hash) from_ord = i;
     if(stn_hash == dest_stn_hash) dest_ord = i;
   }
-  if(from_ord == train.stn_num_ + 1 || dest_ord == train.stn_num_ + 1) {
+  if(from_ord == train.stn_num_ + 1 || dest_ord == train.stn_num_ + 1 || from_ord >= dest_ord) {
     msgr_ << -1 << '\n';
     return {};
   }

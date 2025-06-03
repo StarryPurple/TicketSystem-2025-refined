@@ -46,12 +46,12 @@ template <class RAIt, class Compare>
 void sort(RAIt begin, RAIt end, Compare comp) {
   constexpr size_t INSERTION_THRESHOLD = 8;
   while(end - begin > INSERTION_THRESHOLD) {
-    auto [eq_begin, eq_end] = partition(begin, end, comp);
+    auto [eq_begin, eq_end] = insomnia::partition(begin, end, comp);
     if(eq_begin - begin < end - eq_end) {
-      sort(begin, eq_begin, comp);
+      insomnia::sort(begin, eq_begin, comp);
       begin = eq_end;
     } else {
-      sort(eq_end, end, comp);
+      insomnia::sort(eq_end, end, comp);
       end = eq_begin;
     }
   }

@@ -48,7 +48,7 @@ namespace fs = std::filesystem;
 
 void MultiBptTest() {
   using str_t = ism::array<char, 64>;
-  using index_t = str_t;
+  using index_t = uint64_t;
   using value_t = int;
   using MulBpt_t = ism::MultiBplustree<index_t, value_t>;
 
@@ -68,13 +68,13 @@ void MultiBptTest() {
     std::cin >> opt;
     if(opt[0] == 'i') {
       std::cin >> index >> value;
-      mul_bpt.insert(index, value);
+      mul_bpt.insert(hash1(index), value);
     } else if(opt[0] == 'f') {
       std::cin >> index;
-      print_list(mul_bpt.search(index));
+      print_list(mul_bpt.search(hash1(index)));
     } else if(opt[0] == 'd') {
       std::cin >> index >> value;
-      mul_bpt.remove(index, value);
+      mul_bpt.remove(hash1(index), value);
     }
   }
 }
@@ -222,6 +222,8 @@ ism::vector<ism::pair<std::string, ism::vector<std::string>>> tests = {
   {std::string("pressure_3_hard"), ism::vector<std::string>{"93", "94", "95", "96", "97", "98", "99", "100", "101", "102"}}
 };
 
+#include <chrono>
+
 void LocalTicketSystemTest() {
   auto data_dir = fs::current_path() / "ts_localtest";
   auto name_base = data_dir / "ts";
@@ -232,10 +234,17 @@ void LocalTicketSystemTest() {
   std::string differ_file = localtest_dir / "0-differ.txt";
   system(("echo \"Test starts.\" >" + result_file).c_str());
 
+  auto time_beg = std::chrono::high_resolution_clock::now();
+
   for(const auto &[name, pack] : tests) {
+    // if(name != "pressure_1_easy") continue;
     fs::remove_all(data_dir);
     fs::create_directory(data_dir);
-    system(("echo \"-------Starting test " + name + "-------\" >> " + result_file).c_str());
+    system(("echo \"\" >> " + result_file).c_str());
+    system(("echo \"-------Starting test " + name + ".\" >> " + result_file).c_str());
+    bool passed = true;
+
+    auto T1 = std::chrono::high_resolution_clock::now();
 
     for(const auto &test_no : pack) {
       std::string input_file = localtest_dir / (test_no + ".in");
@@ -250,8 +259,13 @@ void LocalTicketSystemTest() {
       std::cin.rdbuf(input.rdbuf());
       std::cout.rdbuf(output.rdbuf());
 
+      auto t1 = std::chrono::high_resolution_clock::now();
+
       ts::TicketSystem ticket_system(name_base);
       ticket_system.work_loop();
+
+      auto t2 = std::chrono::high_resolution_clock::now();
+      auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
 
       std::cin.rdbuf(old_cin_buf);
       std::cout.rdbuf(old_cout_buf);
@@ -259,19 +273,31 @@ void LocalTicketSystemTest() {
       std::string diff_cmd = "diff -bB " + output_file + " " + answer_file + " > " + differ_file;
       system(diff_cmd.c_str());
       if(fs::file_size(differ_file) == 0)
-        system(("echo \"Test point " + test_no + " passed.\" >> " + result_file).c_str());
+        system(("echo \"Test point " + test_no + " passed. Time used: " + ism::itos(dur) + "ms\" >> " + result_file).c_str());
       else {
-        std::cout << "Test point " + test_no + " failed. \nCheck differ file for more details." << std::endl;
-        system(("echo \"Test point " + test_no + " failed.\" >> " + result_file).c_str());
-        system(("echo \"Check differ file for more details.\" >> " + result_file).c_str());
+        std::cout << "Test point " + test_no + " failed." << std::endl;
+        system(("echo \"Test point " + test_no + " failed. Time used: " + ism::itos(dur) + "ms\" >> " + result_file).c_str());
+        auto T2 = std::chrono::high_resolution_clock::now();
+        auto Dur = std::chrono::duration_cast<std::chrono::milliseconds>(T2 - T1).count();
+        system(("echo \"-------Test " + name + " failed. Subtask time use: " + ism::itos(Dur) + "ms. [Failure]\" >> " + result_file).c_str());
+        passed = false;
         break;
       }
     }
-    system(("echo \"\" >> " + result_file).c_str());
+    if(passed) {
+      auto T2 = std::chrono::high_resolution_clock::now();
+      auto Dur = std::chrono::duration_cast<std::chrono::milliseconds>(T2 - T1).count();
+      system(("echo \"-------Test " + name + " passed. Subtask time use: " + ism::itos(Dur) + "ms. [Success]\" >> " + result_file).c_str());
+    }
   }
+
+  auto time_end = std::chrono::high_resolution_clock::now();
+  auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(time_end - time_beg).count();
+  system(("echo \"\" >> " + result_file).c_str());
+  system(("echo \"Total time use:" + ism::itos(dur) + "ms.\" >> " + result_file).c_str());
 }
 
 int main() {
-  MultiBptTest();
+  TicketSystemTest();
   return 0;
 }

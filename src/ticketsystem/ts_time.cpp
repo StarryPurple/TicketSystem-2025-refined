@@ -17,10 +17,11 @@ std::string TimeHM::string() const {
 std::string DateMD::string() const {
   std::string res;
   days day = day_;
-  if(day >= DAY0801) {
+  if(day >= DAY0901) {
+    res += "09-"; day -= DAY0901;
+  } else if(day >= DAY0801) {
     res += "08-"; day -= DAY0801;
-  }
-  else if(day >= DAY0701) {
+  } else if(day >= DAY0701) {
     res += "07-"; day -= DAY0701;
   } else {
     res += "06-";

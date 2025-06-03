@@ -54,7 +54,7 @@ void sort(RAIt begin, RAIt end, Compare comp);
 template <class RAIt>
 void sort(RAIt begin, RAIt end) {
   using compare_t = std::less<typename std::iterator_traits<RAIt>::value_type>;
-  sort(begin, end, compare_t());
+  insomnia::sort(begin, end, compare_t());
 }
 
 /************ string <-> integer *************/

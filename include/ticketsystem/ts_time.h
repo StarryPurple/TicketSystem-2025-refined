@@ -138,7 +138,7 @@ public:
 class DateMD {
 private:
   static constexpr short MAX_DAYS = 92;
-  static constexpr days DAY0701{30}, DAY0801{61}; //...
+  static constexpr days DAY0701{30}, DAY0801{61}, DAY0901{92}; //...
 
   days day_;
 
@@ -148,13 +148,14 @@ public:
   explicit constexpr DateMD(days day) : day_(day) {}
   explicit constexpr DateMD(const char *str, size_t n) {
     if(n != 5) throw insomnia::invalid_argument("invalid length for a DateMD string.");
-    if(str[1] != '6' && str[1] != '7' && str[1] != '8') {
-      day_ = days(-1); // date -inf / inf. who knows?
+    if(str[1] < '6') {
+      day_ = days(-1); // date -inf. Not dealt yet.
       return;
     }
     day_ = days(10 * (str[3] - '0') + (str[4] - '0') - 1);
     if(str[1] == '7')      day_ += DAY0701;
     else if(str[1] == '8') day_ += DAY0801;
+    else if(str[1] == '9') day_ += DAY0901;
   }
   [[nodiscard]] constexpr days_count_t count() const { return day_.count(); }
   [[nodiscard]] constexpr days day() const { return day_; }
