@@ -39,7 +39,7 @@ Messenger& Messenger::append(const char *msg, size_t n) {
 
 /**** Parameters for all datasets ****/
 
-inline constexpr int BUF_CAPA = 512, K_DIST = 4;
+inline constexpr int BUF_CAPA = 128, K_DIST = 4;
 
 /************ UserManager ************/
 
