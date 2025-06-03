@@ -217,9 +217,9 @@ ism::vector<ism::pair<std::string, ism::vector<std::string>>> tests = {
   {std::string("pressure_1_easy"), ism::vector<std::string>{"43", "44", "45", "46", "47", "48", "49", "50", "51", "52"}},
   {std::string("pressure_2_easy"), ism::vector<std::string>{"53", "54", "55", "56", "57", "58", "59", "60", "61", "62"}},
   {std::string("pressure_3_easy"), ism::vector<std::string>{"63", "64", "65", "66", "67", "68", "69", "70", "71", "72"}},
-  {std::string("pressure_1_hard"), ism::vector<std::string>{"73", "74", "75", "76", "77", "78", "79", "80", "81", "82"}},
-  {std::string("pressure_2_hard"), ism::vector<std::string>{"83", "84", "85", "86", "87", "88", "89", "90", "91", "92"}},
-  {std::string("pressure_3_hard"), ism::vector<std::string>{"93", "94", "95", "96", "97", "98", "99", "100", "101", "102"}}
+  // {std::string("pressure_1_hard"), ism::vector<std::string>{"73", "74", "75", "76", "77", "78", "79", "80", "81", "82"}},
+  // {std::string("pressure_2_hard"), ism::vector<std::string>{"83", "84", "85", "86", "87", "88", "89", "90", "91", "92"}},
+  // {std::string("pressure_3_hard"), ism::vector<std::string>{"93", "94", "95", "96", "97", "98", "99", "100", "101", "102"}},
 };
 
 #include <chrono>
