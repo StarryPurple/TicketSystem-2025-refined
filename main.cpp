@@ -237,7 +237,7 @@ void LocalTicketSystemTest() {
   auto time_beg = std::chrono::high_resolution_clock::now();
 
   for(const auto &[name, pack] : tests) {
-    // if(name != "pressure_1_easy") continue;
+    // if(name != "pressure_3_easy") continue;
     fs::remove_all(data_dir);
     fs::create_directory(data_dir);
     system(("echo \"\" >> " + result_file).c_str());
@@ -294,7 +294,7 @@ void LocalTicketSystemTest() {
   auto time_end = std::chrono::high_resolution_clock::now();
   auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(time_end - time_beg).count();
   system(("echo \"\" >> " + result_file).c_str());
-  system(("echo \"Total time use:" + ism::itos(dur) + "ms.\" >> " + result_file).c_str());
+  system(("echo \"Total time use: " + ism::itos(dur) + "ms.\" >> " + result_file).c_str());
 }
 
 int main() {

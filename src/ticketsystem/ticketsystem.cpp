@@ -36,9 +36,6 @@ void TicketSystem::run() {
   const char *stmp_beg = input_ + 1;
   const char *stmp_end = token_ - 1;
   timestamp_ = ism::stoi<timestamp_t>(stmp_beg, stmp_end - stmp_beg);
-  if(timestamp_ == 750566) {
-    int a = 0; ++a;
-  }
   msgr_.append(input_, token_ - input_ + 1); // with the ' ' .
   ism::advance_past(token_, ' ');  // token = cmd name
   const char *cmd_name = token_;

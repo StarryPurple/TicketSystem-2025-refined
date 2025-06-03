@@ -369,7 +369,7 @@ void TrainManager::QueryTransfer(
     date_time_t date_time_SS, date_time_ST, date_time_TS, date_time_TT;
     date_md_t from_train_dep_date, dest_train_dep_date;
     stn_num_t stn_ord_SS, stn_ord_ST, stn_ord_TS, stn_ord_TT;
-    stn_name_t interval_stn;
+    hash_stn_name_t interval_stn_hid;
 
     ResultInfoType() = default;
     /*
@@ -386,15 +386,12 @@ void TrainManager::QueryTransfer(
   } result_info;
 
   struct InfoType {
-    TrainType train;
-    stn_num_t self_ord;
-    stn_num_t other_ord;
+    train_hid_t train_hid;
+    stn_num_t self_ord, other_ord;
+    hash_stn_name_t interval_stn_hid;
     InfoType() = default;
-    InfoType(const TrainType &_train, stn_num_t _self_ord, stn_num_t _other_ord)
-      : train(_train), self_ord(_self_ord), other_ord(_other_ord) {}
-
-    stn_name_t stn_name() const { return train.stn_list_[other_ord]; }
-    hash_stn_name_t stn_hid() const { return train.stn_list_[other_ord].hash(); }
+    InfoType(train_hid_t _train_hid, stn_num_t _self_ord, stn_num_t _other_ord, hash_stn_name_t _other_stn_hid)
+      : train_hid(_train_hid), self_ord(_self_ord), other_ord(_other_ord), interval_stn_hid(_other_stn_hid) {}
   };
 
   ism::vector<InfoType> from_info_list;
@@ -404,37 +401,49 @@ void TrainManager::QueryTransfer(
     const auto it = train_hid_train_map_.find(train_hid);
     const auto &train = (*it).second;
     for(stn_num_t i = stn_ord + 1; i < train.stn_num_; ++i)
-      from_info_list.emplace_back(train, stn_ord, i);
+      from_info_list.emplace_back(train_hid, stn_ord, i, train.stn_list_[i].hash());
   }
   for(const auto &[train_hid, stn_ord] : dest_train_list) {
     const auto it = train_hid_train_map_.find(train_hid);
     const auto &train = (*it).second;
     for(stn_num_t i = 0; i < stn_ord; ++i)
-      dest_info_list.emplace_back(train, stn_ord, i);
+      dest_info_list.emplace_back(train_hid, stn_ord, i, train.stn_list_[i].hash());
   }
 
   ism::sort(from_info_list.begin(), from_info_list.end(),
     [] (const InfoType &A, const InfoType &B) {
-    return A.stn_hid() < B.stn_hid();
+    return A.interval_stn_hid < B.interval_stn_hid;
   });
   ism::sort(dest_info_list.begin(), dest_info_list.end(),
     [] (const InfoType &A, const InfoType &B) {
-    return A.stn_hid() < B.stn_hid();
+    return A.interval_stn_hid < B.interval_stn_hid;
   });
 
   for(size_t from_l = 0, dest_l = 0, from_r = 0, dest_r = 0;
     from_l < from_info_list.size() && dest_l < dest_info_list.size(); ) {
-    if(from_info_list[from_l].stn_hid() < dest_info_list[dest_l].stn_hid()) { ++from_l; continue; }
-    if(from_info_list[from_l].stn_hid() > dest_info_list[dest_l].stn_hid()) { ++dest_l; continue; }
+    if(from_info_list[from_l].interval_stn_hid < dest_info_list[dest_l].interval_stn_hid) { ++from_l; continue; }
+    if(from_info_list[from_l].interval_stn_hid > dest_info_list[dest_l].interval_stn_hid) { ++dest_l; continue; }
     from_r = from_l; dest_r = dest_l;
-    auto interval_stn_name = dest_info_list[dest_l].stn_name();
-    auto stn_hid = dest_info_list[dest_l].stn_hid();
-    while(from_r + 1 < from_info_list.size() && from_info_list[from_r + 1].stn_hid() == stn_hid) ++from_r;
-    while(dest_r + 1 < dest_info_list.size() && dest_info_list[dest_r + 1].stn_hid() == stn_hid) ++dest_r;
+    auto interval_stn_hid = dest_info_list[dest_l].interval_stn_hid;
+    while(from_r + 1 < from_info_list.size() &&
+          from_info_list[from_r + 1].interval_stn_hid == interval_stn_hid) ++from_r;
+    while(dest_r + 1 < dest_info_list.size() &&
+          dest_info_list[dest_r + 1].interval_stn_hid == interval_stn_hid) ++dest_r;
+
+    ism::vector<TrainType> train_list_S;
+    ism::vector<TrainType> train_list_T;
+    train_list_S.reserve(from_r - from_l + 1);
+    train_list_T.reserve(dest_r - dest_l + 1);
+    for(size_t i = from_l; i <= from_r; ++i)
+      train_list_S.push_back(train_hid_train_map_.find(from_info_list[i].train_hid).view().second);
+    for(size_t j = dest_l; j <= dest_r; ++j)
+      train_list_T.push_back(train_hid_train_map_.find(dest_info_list[j].train_hid).view().second);
+
     for(size_t i = from_l; i <= from_r; ++i)
       for(size_t j = dest_l; j <= dest_r; ++j) {
-        const auto &[from_train, stn_ord_SS, stn_ord_ST] = from_info_list[i];
-        const auto &[dest_train, stn_ord_TT, stn_ord_TS] = dest_info_list[j];
+        auto &from_train = train_list_S[i - from_l], &dest_train = train_list_T[j - dest_l];
+        auto stn_ord_SS = from_info_list[i].self_ord, stn_ord_ST = from_info_list[i].other_ord;
+        auto stn_ord_TT = dest_info_list[j].self_ord, stn_ord_TS = dest_info_list[j].other_ord;
 
         if(from_train.hash() == dest_train.hash()) continue;
 
@@ -489,7 +498,7 @@ void TrainManager::QueryTransfer(
           result_info.date_time_TT = date_time_TT;
           result_info.from_train_dep_date = from_train_dep_date;
           result_info.dest_train_dep_date = dest_train_dep_date;
-          result_info.interval_stn = interval_stn_name;
+          result_info.interval_stn_hid = interval_stn_hid;
           result_info.stn_ord_SS = stn_ord_SS;
           result_info.stn_ord_ST = stn_ord_ST;
           result_info.stn_ord_TS = stn_ord_TS;
@@ -517,11 +526,12 @@ void TrainManager::QueryTransfer(
 
   msgr_ << result_info.from_train.train_id_ << ' ' << from_stn << ' '
         << result_info.date_time_SS.string() << " -> "
-        << result_info.interval_stn << ' '
+        << result_info.from_train.stn_list_[result_info.stn_ord_ST] << ' '
         << result_info.date_time_ST.string() << ' '
         << result_info.from_train.cost(result_info.stn_ord_SS, result_info.stn_ord_ST) << ' '
-        << seat_num_S << '\n';
-  msgr_ << result_info.dest_train.train_id_ << ' ' << result_info.interval_stn << ' '
+        << seat_num_S << '\n'
+        << result_info.dest_train.train_id_ << ' '
+        << result_info.dest_train.stn_list_[result_info.stn_ord_TS] << ' '
         << result_info.date_time_TS.string() << " -> "
         << dest_stn << ' '
         << result_info.date_time_TT.string() << ' '
