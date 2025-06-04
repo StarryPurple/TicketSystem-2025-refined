@@ -206,6 +206,7 @@ void TicketSystemTest() {
   ticket_system.work_loop();
 }
 
+/*
 ism::vector<ism::pair<std::string, ism::vector<std::string>>> tests = {
   // {std::string("basic_1"), ism::vector<std::string>{"1"}},
   // {std::string("basic_2"), ism::vector<std::string>{"2"}},
@@ -296,6 +297,7 @@ void LocalTicketSystemTest() {
   system(("echo \"\" >> " + result_file).c_str());
   system(("echo \"Total time use: " + ism::itos(dur) + "ms.\" >> " + result_file).c_str());
 }
+*/
 
 int main() {
   TicketSystemTest();

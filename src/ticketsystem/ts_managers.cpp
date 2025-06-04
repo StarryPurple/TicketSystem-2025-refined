@@ -24,6 +24,12 @@ Messenger& Messenger::operator<<(std::string &&msg) {
   return *this;
 }
 
+Messenger& Messenger::operator<<(const date_time_t &date_time) {
+  format_to(date_time, msg_);
+  return *this;
+}
+
+
 template <size_t N>
 Messenger& Messenger::operator<<(const insomnia::array<char, N> &msg) {
   msg_.append(msg.c_str(), msg.length());
@@ -281,13 +287,13 @@ void TrainManager::QueryTrain(const train_id_t &train_id, date_md_t train_depart
     if(i == 0)
       msgr_ << date_time_t::default_c_str();
     else {
-      msgr_ << date_time_t(date_time + train.arrival_time_list_[i]).string();
+      msgr_ << date_time_t(date_time + train.arrival_time_list_[i]);
     }
     msgr_ << " -> ";
     if(i == train.stn_num_ - 1)
       msgr_ << date_time_t::default_c_str();
     else {
-      msgr_ << date_time_t(date_time + train.departure_time_list_[i]).string();
+      msgr_ << date_time_t(date_time + train.departure_time_list_[i]);
     }
     msgr_ << ' ' << train.accumulative_price_list_[i] << ' ';
     if(i == train.stn_num_ - 1)
@@ -346,9 +352,9 @@ void TrainManager::QueryTicket(
     auto available_seat_num = train_seat_status.available_seat_num(from_ord, dest_ord);
     Messenger tmp_msgr;
     tmp_msgr << train.train_id_ << ' ' << from_stn << ' '
-             << date_time_t(train_departure_date_time + train.departure_time_list_[from_ord]).string()
+             << date_time_t(train_departure_date_time + train.departure_time_list_[from_ord])
              << " -> " << dest_stn << ' '
-             << date_time_t(train_departure_date_time + train.arrival_time_list_[dest_ord]).string()
+             << date_time_t(train_departure_date_time + train.arrival_time_list_[dest_ord])
              << ' ' << cost << ' ' << available_seat_num << '\n';
     ret_vec.emplace_back(tmp_msgr.str(), time, cost, train.train_id_);
     ++from_ptr; ++dest_ptr;
@@ -549,16 +555,16 @@ void TrainManager::QueryTransfer(
     result_info.stn_ord_TS, result_info.stn_ord_TT);
 
   msgr_ << result_info.from_train.train_id_ << ' ' << from_stn << ' '
-        << result_info.date_time_SS.string() << " -> "
+        << result_info.date_time_SS << " -> "
         << result_info.from_train.stn_list_[result_info.stn_ord_ST] << ' '
-        << result_info.date_time_ST.string() << ' '
+        << result_info.date_time_ST << ' '
         << result_info.from_train.cost(result_info.stn_ord_SS, result_info.stn_ord_ST) << ' '
         << seat_num_S << '\n'
         << result_info.dest_train.train_id_ << ' '
         << result_info.dest_train.stn_list_[result_info.stn_ord_TS] << ' '
-        << result_info.date_time_TS.string() << " -> "
+        << result_info.date_time_TS << " -> "
         << dest_stn << ' '
-        << result_info.date_time_TT.string() << ' '
+        << result_info.date_time_TT << ' '
         << result_info.dest_train.cost(result_info.stn_ord_TS, result_info.stn_ord_TT) << ' '
         << seat_num_T << '\n';
 }
