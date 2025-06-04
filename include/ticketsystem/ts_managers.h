@@ -21,6 +21,7 @@ public:
   Messenger& operator<<(char msg);
   Messenger& operator<<(const char *msg);
   Messenger& operator<<(const std::string &msg);
+  Messenger& operator<<(std::string &&msg);
   template<size_t N>
   Messenger& operator<<(const ism::array<char, N> &msg);
   // Messenger& operator<<(const time_dur_t &msg);

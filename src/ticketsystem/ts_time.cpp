@@ -6,12 +6,21 @@ namespace ticket_system {
 std::string TimeHM::string() const {
   std::string res;
   auto hour = count() / 60, minute = count() - 60 * hour;
-  if(hour < 10) res += '0';
-  res += ism::itos(hour);
+  res += (hour / 10) + '0';
+  res += (hour % 10) + '0';
   res += ':';
-  if(minute < 10) res += '0';
-  res += ism::itos(minute);
+  res += (minute / 10) + '0';
+  res += (minute % 10) + '0';
   return res;
+}
+
+void format_to(const TimeHM &time_hm, std::string &out) {
+  auto hour = time_hm.count() / 60, minute = time_hm.count() - 60 * hour;
+  out += (hour / 10) + '0';
+  out += (hour % 10) + '0';
+  out += ':';
+  out += (minute / 10) + '0';
+  out += (minute % 10) + '0';
 }
 
 std::string DateMD::string() const {
@@ -27,9 +36,27 @@ std::string DateMD::string() const {
     res += "06-";
   }
   day += 1_day;
-  if(day < 10_day) res += '0';
-  res += ism::itos(day.count());
+  auto days = day.count();
+  res += (days / 10) + '0';
+  res += (days % 10) + '0';
   return res;
+}
+
+void format_to(const DateMD &date_md, std::string &out) {
+  days day = date_md.day_;
+  if(day >= DateMD::DAY0901) {
+    out += "09-"; day -= DateMD::DAY0901;
+  } else if(day >= DateMD::DAY0801) {
+    out += "08-"; day -= DateMD::DAY0801;
+  } else if(day >= DateMD::DAY0701) {
+    out += "07-"; day -= DateMD::DAY0701;
+  } else {
+    out += "06-";
+  }
+  day += 1_day;
+  auto days = day.count();
+  out += (days / 10) + '0';
+  out += (days % 10) + '0';
 }
 
 DateTime DateTime::operator+(minutes minute) const {
@@ -60,6 +87,12 @@ DateTime& DateTime::operator+=(minutes minute) {
 
 DateTime& DateTime::operator-=(minutes minute) {
   return *this = *this - minute;
+}
+
+void format_to(const DateTime &date_time, std::string &out) {
+  format_to(date_time.date_md_, out);
+  out += ' ';
+  format_to(date_time.time_hm_, out);
 }
 
 }

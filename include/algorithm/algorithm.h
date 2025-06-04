@@ -116,23 +116,27 @@ Integer stoi(const char *str, size_t n) {
 template <class Integer>
   requires std::is_integral_v<Integer>
 std::string itos(Integer val) {
+  // C++17 std::to_chars are said to be better.
+  // remove "static" if multi threads are enabled.
+  static char buf[64];
+  char *p = buf + sizeof(buf);
+  // *(--p) = '\0'; no delimiter desu.
+  bool is_neg = false;
   if(val == 0)
-    return "0";
-  std::string rev;
-  bool sig = true;
-  if(val < 0) {
-    val = -val;
-    sig = false;
+    *(--p) = '0';
+  else {
+    if(val < 0) {
+      is_neg = true;
+      val = -val;
+    }
+    while(val > 0) {
+      *(--p) = (val % 10) + '0';
+      val /= 10;
+    }
   }
-  while(val > 0) {
-    rev += ('0' + val % 10);
-    val /= 10;
-  }
-  std::string ret;
-  if(!sig) ret += '-';
-  for(auto rit = rev.rbegin(); rit != rev.rend(); ++rit)
-    ret += *rit;
-  return ret;
+  if(is_neg)
+    *(--p) = '-';
+  return std::string(p, buf + sizeof(buf) - p); // NOLINT
 }
 
 /*************** ptr advance ****************/

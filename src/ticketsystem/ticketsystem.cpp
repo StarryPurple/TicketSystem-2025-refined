@@ -137,7 +137,7 @@ void TicketSystem::BuyTicket() {
   static CmdBuyTicket cmd;
   cmd.initialize(input_);
   if(!user_mgr_.has_logged_in(cmd.username)) {
-    msgr_ << -1 << '\n';
+    msgr_ << "-1\n";
     return;
   }
   auto ticket_order = train_mgr_.BuyTicket(
@@ -152,7 +152,7 @@ void TicketSystem::QueryOrder() {
   static CmdQueryOrder cmd;
   cmd.initialize(input_);
   if(!user_mgr_.has_logged_in(cmd.username)) {
-    msgr_ << -1 << '\n';
+    msgr_ << "-1\n";
     return;
   }
   order_mgr_.QueryOrder(cmd.username);
@@ -162,17 +162,17 @@ void TicketSystem::RefundTicket() {
   static CmdRefundTicket cmd;
   cmd.initialize(input_);
   if(!user_mgr_.has_logged_in(cmd.username)) {
-    msgr_ << -1 << '\n';
+    msgr_ << "-1\n";
     return;
   }
   auto target_order_id = order_mgr_.find_order_id(cmd.username, cmd.order_rank);
   if(target_order_id == INVALID_ORDER_ID) {
-    msgr_ << -1 << '\n';
+    msgr_ << "-1\n";
     return;
   }
   auto target_order_iter = order_mgr_.get_order_iter(target_order_id);
   if(target_order_iter.view().second.has_refunded()) {
-    msgr_ << -1 << '\n';
+    msgr_ << "-1\n";
     return;
   }
   auto &target_order = (*target_order_iter).second;
@@ -201,14 +201,14 @@ void TicketSystem::RefundTicket() {
     order.set_success();
     seat_status.consume_seat_num(order.ticket_num(), order.from_stn_ord(), order.dest_stn_ord());
   }
-  msgr_ << 0 << '\n';
+    msgr_ << "0\n";
 }
 
 void TicketSystem::Clean() {
   user_mgr_.clean();
   train_mgr_.clean();
   order_mgr_.clean();
-  msgr_ << 0 << '\n';
+    msgr_ << "0\n";
 }
 
 void TicketSystem::Exit() {

@@ -99,7 +99,7 @@ private:
   minutes minute_;
 
 public:
-  static std::string default_string() { return "xx:xx"; }
+  // static constexpr const char *default_c_str() { return "xx:xx"; }
 
   constexpr TimeHM() = default;
   explicit constexpr TimeHM(minutes minute) : minute_(minute.day_normalize()) {}
@@ -133,6 +133,8 @@ public:
   }
 
   constexpr auto operator<=>(const TimeHM &) const = default;
+
+  friend void format_to(const TimeHM &time_hm, std::string &out);
 };
 
 class DateMD {
@@ -143,7 +145,8 @@ private:
   days day_;
 
 public:
-  static std::string default_string() { return "xx-xx"; }
+  // static constexpr const char *default_c_str() { return "xx-xx"; }
+
   constexpr DateMD() = default;
   explicit constexpr DateMD(days day) : day_(day) {}
   explicit constexpr DateMD(const char *str, size_t n) {
@@ -177,6 +180,8 @@ public:
   }
 
   constexpr auto operator<=>(const DateMD &) const = default;
+
+  friend void format_to(const DateMD &date_md, std::string &out);
 };
 
 class DateTime {
@@ -187,8 +192,8 @@ private:
 
 public:
 
-  static std::string default_string() {
-    return DateMD::default_string() + " " + TimeHM::default_string();
+  static constexpr const char *default_c_str() {
+    return "xx-xx xx:xx";
   }
 
   constexpr DateTime() = default;
@@ -210,6 +215,8 @@ public:
 
   // date_md_ is in front of time_hm_.
   constexpr auto operator<=>(const DateTime &) const = default;
+
+  friend void format_to(const DateTime &date_time, std::string &out);
 };
 
 }

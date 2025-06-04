@@ -10,7 +10,7 @@ Messenger& Messenger::operator<<(char msg) {
 }
 
 Messenger& Messenger::operator<<(const char *msg) {
-  msg_ += std::string(msg);
+  msg_ += msg;
   return *this;
 }
 
@@ -19,27 +19,51 @@ Messenger& Messenger::operator<<(const std::string &msg) {
   return *this;
 }
 
+Messenger& Messenger::operator<<(std::string &&msg) {
+  msg_ += std::move(msg); // NOLINT
+  return *this;
+}
+
 template <size_t N>
 Messenger& Messenger::operator<<(const insomnia::array<char, N> &msg) {
-  msg_ += msg.str();
+  msg_.append(msg.c_str(), msg.length());
   return *this;
 }
 
 template <class Integer> requires std::is_integral_v<Integer>
 Messenger& Messenger::operator<<(Integer val) {
-  msg_ += ism::itos(val);
+  // C++17 std::to_chars are said to be better.
+  // remove "static" if multi threads are enabled.
+  static char buf[64];
+  char *p = buf + sizeof(buf);
+  // *(--p) = '\0'; not needed.
+  bool is_neg = false;
+  if(val == 0)
+    *(--p) = '0';
+  else {
+    if(val < 0) {
+      is_neg = true;
+      val = -val;
+    }
+    while(val > 0) {
+      *(--p) = (val % 10) + '0';
+      val /= 10;
+    }
+  }
+  if(is_neg)
+    *(--p) = '-';
+  msg_.append(p, buf + sizeof(buf) - p);
   return *this;
 }
 
 Messenger& Messenger::append(const char *msg, size_t n) {
-  for(size_t i = 0; i < n; ++i)
-    msg_ += *(msg++);
+  msg_.append(msg, n);
   return *this;
 }
 
 /**** Parameters for all datasets ****/
 
-inline constexpr int BUF_CAPA = 16, K_DIST = 4;
+inline constexpr int BUF_CAPA = 48, K_DIST = 4;
 
 /************ UserManager ************/
 
@@ -50,52 +74,52 @@ void UserManager::AddUser(const username_t &cur_username, UserType &tar_user) {
   if(user_hid_user_map_.empty()) {
     tar_user.access_lvl_ = HIGHEST_ACCESS_LVL;
     user_hid_user_map_.insert(tar_user.hash(), tar_user);
-    msgr_ << 0 << '\n';
+    msgr_ << "0\n";
     return;
   }
   access_lvl_t cur_access_lvl = 0;
   if(auto it = logged_in_users_.find(cur_username.hash());
      it == logged_in_users_.end()) {
-    msgr_ << -1 << '\n';
+    msgr_ << "-1\n";
     return;
   } else cur_access_lvl = it->second.access_lvl;
   if(cur_access_lvl <= tar_user.access_lvl_) {
-    msgr_ << -1 << '\n';
+    msgr_ << "-1\n";
     return;
   }
   user_hid_user_map_.insert(tar_user.hash(), tar_user);
-  msgr_ << 0 << '\n';
+    msgr_ << "0\n";
 }
 
 void UserManager::Login(const username_t &username, const password_t &password) {
   auto huid = username.hash();
   if(logged_in_users_.find(huid) != logged_in_users_.end()) {
-    msgr_ << -1 << '\n';
+    msgr_ << "-1\n";
     return;
   }
   const auto it = user_hid_user_map_.find(huid);
   if(it == user_hid_user_map_.end()) {
-    msgr_ << -1 << '\n';
+    msgr_ << "-1\n";
     return;
   }
   const auto &user = (*it).second;
   if(user.password_.hash() != password.hash()) {
-    msgr_ << -1 << '\n';
+    msgr_ << "-1\n";
     return;
   }
   logged_in_users_.emplace(huid, LoggedInUserInfo(user.access_lvl_));
-  msgr_ << 0 << '\n';
+    msgr_ << "0\n";
 }
 
 void UserManager::Logout(const username_t &username) {
   auto huid = username.hash();
   const auto it = logged_in_users_.find(huid);
   if(it == logged_in_users_.end()) {
-    msgr_ << -1 << '\n';
+    msgr_ << "-1\n";
     return;
   }
   logged_in_users_.erase(it);
-  msgr_ << 0 << '\n';
+    msgr_ << "0\n";
 }
 
 void UserManager::QueryProfile(const username_t &cur_username, const username_t &tar_username) {
@@ -103,17 +127,17 @@ void UserManager::QueryProfile(const username_t &cur_username, const username_t 
   access_lvl_t cur_access_lvl = 0;
   if(auto it = logged_in_users_.find(cur_username.hash());
      it == logged_in_users_.end()) {
-    msgr_ << -1 << '\n';
+    msgr_ << "-1\n";
     return;
   } else cur_access_lvl = it->second.access_lvl;
   const auto it = user_hid_user_map_.find(thuid);
   if(it == user_hid_user_map_.end()) {
-    msgr_ << -1 << '\n';
+    msgr_ << "-1\n";
     return;
   }
   const auto &user = (*it).second;
   if((cur_access_lvl <= user.access_lvl_) && (chuid != thuid)) {
-    msgr_ << -1 << '\n';
+    msgr_ << "-1\n";
     return;
   }
   msgr_ << user.username_   << ' '
@@ -133,21 +157,21 @@ void UserManager::ModifyProfile(
   access_lvl_t cur_access_lvl = 0;
   if(auto it = logged_in_users_.find(cur_username.hash());
      it == logged_in_users_.end()) {
-    msgr_ << -1 << '\n';
+    msgr_ << "-1\n";
     return;
      } else cur_access_lvl = it->second.access_lvl;
   auto it = user_hid_user_map_.find(thuid);
   if(it == user_hid_user_map_.end()) {
-    msgr_ << -1 << '\n';
+    msgr_ << "-1\n";
     return;
   }
   auto &user = (*it).second;
   if((cur_access_lvl <= user.access_lvl_) && (chuid != thuid)) {
-    msgr_ << -1 << '\n';
+    msgr_ << "-1\n";
     return;
   }
   if(has_access_lvl && (cur_access_lvl <= access_lvl)) {
-    msgr_ << -1 << '\n';
+    msgr_ << "-1\n";
     return;
   }
   if(has_password)   user.password_   = password;
@@ -180,37 +204,37 @@ TrainManager::TrainManager(std::filesystem::path path, Messenger &msgr)
 void TrainManager::AddTrain(const TrainType &train) {
   auto htid = train.hash();
   if(train_hid_train_map_.find(htid) != train_hid_train_map_.end()) {
-    msgr_ << -1 << '\n';
+    msgr_ << "-1\n";
     return;
   }
   train_hid_train_map_.insert(htid, train);
-  msgr_ << 0 << '\n';
+    msgr_ << "0\n";
 }
 
 void TrainManager::DeleteTrain(const train_id_t &train_id) {
   auto htid = train_id.hash();
   const auto it = train_hid_train_map_.find(htid);
   if(it == train_hid_train_map_.end()) {
-    msgr_ << -1 << '\n';
+    msgr_ << "-1\n";
     return;
   }
   if(const auto &train = (*it).second; train.has_released_) {
-    msgr_ << -1 << '\n';
+    msgr_ << "-1\n";
     return;
   }
   train_hid_train_map_.remove(htid);
-  msgr_ << 0 << '\n';
+    msgr_ << "0\n";
 }
 
 void TrainManager::ReleaseTrain(const train_id_t &train_id) {
   auto htid = train_id.hash();
   auto it = train_hid_train_map_.find(htid);
   if(it == train_hid_train_map_.end()) {
-    msgr_ << -1 << '\n';
+    msgr_ << "-1\n";
     return;
   }
   if(const auto &train = it.view().second; train.has_released_) {
-    msgr_ << -1 << '\n';
+    msgr_ << "-1\n";
     return;
   }
   auto &train = (*it).second;
@@ -223,19 +247,19 @@ void TrainManager::ReleaseTrain(const train_id_t &train_id) {
   for(days_count_t i = train.start_date_.count(); i <= train.final_date_.count(); ++i)
     train_hid_seats_map_.insert(
       ism::pair<train_hid_t, days_count_t>(htid, i), train_seat_status);
-  msgr_ << 0 << '\n';
+    msgr_ << "0\n";
 }
 
 void TrainManager::QueryTrain(const train_id_t &train_id, date_md_t train_departure_date) {
   auto htid = train_id.hash();
   const auto it = train_hid_train_map_.find(htid);
   if(it == train_hid_train_map_.end()) {
-    msgr_ << -1 << '\n';
+    msgr_ << "-1\n";
     return;
   }
   const auto &train = (*it).second;
   if(!train.check_train_departure_date(train_departure_date)) {
-    msgr_ << -1 << '\n';
+    msgr_ << "-1\n";
     return;
   }
 
@@ -255,13 +279,13 @@ void TrainManager::QueryTrain(const train_id_t &train_id, date_md_t train_depart
   for(size_t i = 0; i < train.stn_num_; ++i) {
     msgr_ << train.stn_list_[i] << ' ';
     if(i == 0)
-      msgr_ << date_time_t::default_string();
+      msgr_ << date_time_t::default_c_str();
     else {
       msgr_ << date_time_t(date_time + train.arrival_time_list_[i]).string();
     }
     msgr_ << " -> ";
     if(i == train.stn_num_ - 1)
-      msgr_ << date_time_t::default_string();
+      msgr_ << date_time_t::default_c_str();
     else {
       msgr_ << date_time_t(date_time + train.departure_time_list_[i]).string();
     }
@@ -509,7 +533,7 @@ void TrainManager::QueryTransfer(
   }
 
   if(!success) {
-    msgr_ << 0 << '\n';
+    msgr_ << "0\n";
     return;
   }
 
@@ -551,7 +575,7 @@ TicketOrderType TrainManager::BuyTicket(
   const auto &train = (*train_it).second;
 
   if(ticket_num > train.max_seat_num_) {
-    msgr_ << -1 << '\n';
+    msgr_ << "-1\n";
     return {};
   }
 
@@ -565,12 +589,12 @@ TicketOrderType TrainManager::BuyTicket(
     if(stn_hash == dest_stn_hash) dest_ord = i;
   }
   if(from_ord == train.stn_num_ + 1 || dest_ord == train.stn_num_ + 1 || from_ord >= dest_ord) {
-    msgr_ << -1 << '\n';
+    msgr_ << "-1\n";
     return {};
   }
   auto train_departure_date = train.get_train_departure_date(passenger_departure_date, from_ord);
   if(!train.check_train_departure_date(train_departure_date)) {
-    msgr_ << -1 << '\n';
+    msgr_ << "-1\n";
     return {};
   }
   auto seat_it = train_hid_seats_map_.find(ism::pair<train_hid_t, days_count_t>(thid, train_departure_date.count()));
@@ -584,7 +608,7 @@ TicketOrderType TrainManager::BuyTicket(
         date_time_t(train_departure_date, train.start_time_) + train.arrival_time_list_[dest_ord],
         from_ord, dest_ord, train.cost(from_ord, dest_ord), ticket_num, train_departure_date};
     }
-    msgr_ << -1 << '\n';
+    msgr_ << "-1\n";
     return {};
   }
   (*seat_it).second.consume_seat_num(ticket_num, from_ord, dest_ord);
