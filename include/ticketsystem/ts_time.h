@@ -7,8 +7,6 @@
 
 namespace ticket_system {
 
-namespace ism = insomnia;
-
 using minutes_count_t = int;
 using days_count_t    = short;
 

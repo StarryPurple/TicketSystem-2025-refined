@@ -1,8 +1,10 @@
 #ifndef TICKETSYSTEM_TICKETSYSTEM_H
 #define TICKETSYSTEM_TICKETSYSTEM_H
 
-
-#include "ts_managers.h"
+#include "messenger.h"
+#include "user_manager.h"
+#include "train_manager.h"
+#include "ticket_order_manager.h"
 
 namespace ticket_system {
 
@@ -42,7 +44,7 @@ private:
   char input_[16384] {};
   const char *token_ = input_;
   SystemStatus system_status_ = SystemStatus::StatGood;
-  Messenger msgr_;
+  ism::Messenger msgr_;
   UserManager user_mgr_;
   TrainManager train_mgr_;
   TicketOrderManager order_mgr_;
@@ -67,8 +69,6 @@ private:
   // return false if exited.
   void run();
 };
-
-
 
 }
 

@@ -1,207 +1,10 @@
-#include "ts_managers.h"
+#include "train_manager.h"
 
 namespace ticket_system {
 
-/************* Messenger ************/
+static constexpr int BUF_CAPA = 16, K_DIST = 2;
 
-Messenger& Messenger::operator<<(char msg) {
-  msg_ += msg;
-  return *this;
-}
-
-Messenger& Messenger::operator<<(const char *msg) {
-  msg_ += msg;
-  return *this;
-}
-
-Messenger& Messenger::operator<<(const std::string &msg) {
-  msg_ += msg;
-  return *this;
-}
-
-Messenger& Messenger::operator<<(std::string &&msg) {
-  msg_ += std::move(msg); // NOLINT
-  return *this;
-}
-
-Messenger& Messenger::operator<<(const date_time_t &date_time) {
-  format_to(date_time, msg_);
-  return *this;
-}
-
-
-template <size_t N>
-Messenger& Messenger::operator<<(const insomnia::array<char, N> &msg) {
-  msg_.append(msg.c_str(), msg.length());
-  return *this;
-}
-
-template <class Integer> requires std::is_integral_v<Integer>
-Messenger& Messenger::operator<<(Integer val) {
-  // C++17 std::to_chars are said to be better.
-  // remove "static" if multi threads are enabled.
-  static char buf[64];
-  char *p = buf + sizeof(buf);
-  // *(--p) = '\0'; not needed.
-  bool is_neg = false;
-  if(val == 0)
-    *(--p) = '0';
-  else {
-    if(val < 0) {
-      is_neg = true;
-      val = -val;
-    }
-    while(val > 0) {
-      *(--p) = (val % 10) + '0';
-      val /= 10;
-    }
-  }
-  if(is_neg)
-    *(--p) = '-';
-  msg_.append(p, buf + sizeof(buf) - p);
-  return *this;
-}
-
-Messenger& Messenger::append(const char *msg, size_t n) {
-  msg_.append(msg, n);
-  return *this;
-}
-
-/**** Parameters for all datasets ****/
-
-inline constexpr int BUF_CAPA = 48, K_DIST = 4;
-
-/************ UserManager ************/
-
-UserManager::UserManager(std::filesystem::path path, Messenger &msgr)
-: user_hid_user_map_(path.string() + "-huid", BUF_CAPA, K_DIST), msgr_(msgr) {}
-
-void UserManager::AddUser(const username_t &cur_username, UserType &tar_user) {
-  if(user_hid_user_map_.empty()) {
-    tar_user.access_lvl_ = HIGHEST_ACCESS_LVL;
-    user_hid_user_map_.insert(tar_user.hash(), tar_user);
-    msgr_ << "0\n";
-    return;
-  }
-  access_lvl_t cur_access_lvl = 0;
-  if(auto it = logged_in_users_.find(cur_username.hash());
-     it == logged_in_users_.end()) {
-    msgr_ << "-1\n";
-    return;
-  } else cur_access_lvl = it->second.access_lvl;
-  if(cur_access_lvl <= tar_user.access_lvl_) {
-    msgr_ << "-1\n";
-    return;
-  }
-  user_hid_user_map_.insert(tar_user.hash(), tar_user);
-    msgr_ << "0\n";
-}
-
-void UserManager::Login(const username_t &username, const password_t &password) {
-  auto huid = username.hash();
-  if(logged_in_users_.find(huid) != logged_in_users_.end()) {
-    msgr_ << "-1\n";
-    return;
-  }
-  const auto it = user_hid_user_map_.find(huid);
-  if(it == user_hid_user_map_.end()) {
-    msgr_ << "-1\n";
-    return;
-  }
-  const auto &user = (*it).second;
-  if(user.password_.hash() != password.hash()) {
-    msgr_ << "-1\n";
-    return;
-  }
-  logged_in_users_.emplace(huid, LoggedInUserInfo(user.access_lvl_));
-    msgr_ << "0\n";
-}
-
-void UserManager::Logout(const username_t &username) {
-  auto huid = username.hash();
-  const auto it = logged_in_users_.find(huid);
-  if(it == logged_in_users_.end()) {
-    msgr_ << "-1\n";
-    return;
-  }
-  logged_in_users_.erase(it);
-    msgr_ << "0\n";
-}
-
-void UserManager::QueryProfile(const username_t &cur_username, const username_t &tar_username) {
-  auto chuid = cur_username.hash(), thuid = tar_username.hash();
-  access_lvl_t cur_access_lvl = 0;
-  if(auto it = logged_in_users_.find(cur_username.hash());
-     it == logged_in_users_.end()) {
-    msgr_ << "-1\n";
-    return;
-  } else cur_access_lvl = it->second.access_lvl;
-  const auto it = user_hid_user_map_.find(thuid);
-  if(it == user_hid_user_map_.end()) {
-    msgr_ << "-1\n";
-    return;
-  }
-  const auto &user = (*it).second;
-  if((cur_access_lvl <= user.access_lvl_) && (chuid != thuid)) {
-    msgr_ << "-1\n";
-    return;
-  }
-  msgr_ << user.username_   << ' '
-        << user.zh_name_    << ' '
-        << user.mail_addr_  << ' '
-        << user.access_lvl_ << '\n';
-}
-
-void UserManager::ModifyProfile(
-  const username_t &cur_username, const username_t &tar_username,
-  const password_t &password, bool has_password,
-  const zh_name_t &zh_name, bool has_zh_name,
-  const mail_addr_t &mail_addr, bool has_mail_addr,
-  const access_lvl_t &access_lvl, bool has_access_lvl) {
-
-  auto chuid = cur_username.hash(), thuid = tar_username.hash();
-  access_lvl_t cur_access_lvl = 0;
-  if(auto it = logged_in_users_.find(cur_username.hash());
-     it == logged_in_users_.end()) {
-    msgr_ << "-1\n";
-    return;
-     } else cur_access_lvl = it->second.access_lvl;
-  auto it = user_hid_user_map_.find(thuid);
-  if(it == user_hid_user_map_.end()) {
-    msgr_ << "-1\n";
-    return;
-  }
-  auto &user = (*it).second;
-  if((cur_access_lvl <= user.access_lvl_) && (chuid != thuid)) {
-    msgr_ << "-1\n";
-    return;
-  }
-  if(has_access_lvl && (cur_access_lvl <= access_lvl)) {
-    msgr_ << "-1\n";
-    return;
-  }
-  if(has_password)   user.password_   = password;
-  if(has_zh_name)    user.zh_name_    = zh_name;
-  if(has_mail_addr)  user.mail_addr_  = mail_addr;
-  if(has_access_lvl) user.access_lvl_ = access_lvl;
-  msgr_ << user.username_   << ' '
-        << user.zh_name_    << ' '
-        << user.mail_addr_  << ' '
-        << user.access_lvl_ << '\n';
-}
-
-bool UserManager::has_logged_in(const username_t &username) {
-  return logged_in_users_.find(username.hash()) != logged_in_users_.end();
-}
-
-void UserManager::clean() {
-  user_hid_user_map_.clear();
-  logged_in_users_.clear();
-}
-
-/************ TrainManager ***********/
-
-TrainManager::TrainManager(std::filesystem::path path, Messenger &msgr)
+TrainManager::TrainManager(std::filesystem::path path, ism::Messenger &msgr)
 : train_hid_train_map_(path.string() + "-htid", BUF_CAPA, K_DIST),
   train_hid_seats_map_(path.string() + "-htid_seats", BUF_CAPA, K_DIST),
   stn_hid_train_info_multimap_(path.string() + "-stn_htid", BUF_CAPA, K_DIST),
@@ -287,13 +90,13 @@ void TrainManager::QueryTrain(const train_id_t &train_id, date_md_t train_depart
     if(i == 0)
       msgr_ << date_time_t::default_c_str();
     else {
-      msgr_ << date_time_t(date_time + train.arrival_time_list_[i]);
+      msgr_ << date_time_t(date_time + train.arrival_time_list_[i]).string();
     }
     msgr_ << " -> ";
     if(i == train.stn_num_ - 1)
       msgr_ << date_time_t::default_c_str();
     else {
-      msgr_ << date_time_t(date_time + train.departure_time_list_[i]);
+      msgr_ << date_time_t(date_time + train.departure_time_list_[i]).string();
     }
     msgr_ << ' ' << train.accumulative_price_list_[i] << ' ';
     if(i == train.stn_num_ - 1)
@@ -350,11 +153,11 @@ void TrainManager::QueryTicket(
       ism::pair<train_hid_t, days_count_t>(train.hash(), train_departure_date.count()));
     auto &train_seat_status = (*seats_it).second;
     auto available_seat_num = train_seat_status.available_seat_num(from_ord, dest_ord);
-    Messenger tmp_msgr;
+    ism::Messenger tmp_msgr;
     tmp_msgr << train.train_id_ << ' ' << from_stn << ' '
-             << date_time_t(train_departure_date_time + train.departure_time_list_[from_ord])
+             << date_time_t(train_departure_date_time + train.departure_time_list_[from_ord]).string()
              << " -> " << dest_stn << ' '
-             << date_time_t(train_departure_date_time + train.arrival_time_list_[dest_ord])
+             << date_time_t(train_departure_date_time + train.arrival_time_list_[dest_ord]).string()
              << ' ' << cost << ' ' << available_seat_num << '\n';
     ret_vec.emplace_back(tmp_msgr.str(), time, cost, train.train_id_);
     ++from_ptr; ++dest_ptr;
@@ -555,16 +358,16 @@ void TrainManager::QueryTransfer(
     result_info.stn_ord_TS, result_info.stn_ord_TT);
 
   msgr_ << result_info.from_train.train_id_ << ' ' << from_stn << ' '
-        << result_info.date_time_SS << " -> "
+        << result_info.date_time_SS.string() << " -> "
         << result_info.from_train.stn_list_[result_info.stn_ord_ST] << ' '
-        << result_info.date_time_ST << ' '
+        << result_info.date_time_ST.string() << ' '
         << result_info.from_train.cost(result_info.stn_ord_SS, result_info.stn_ord_ST) << ' '
         << seat_num_S << '\n'
         << result_info.dest_train.train_id_ << ' '
         << result_info.dest_train.stn_list_[result_info.stn_ord_TS] << ' '
-        << result_info.date_time_TS << " -> "
+        << result_info.date_time_TS.string() << " -> "
         << dest_stn << ' '
-        << result_info.date_time_TT << ' '
+        << result_info.date_time_TT.string() << ' '
         << result_info.dest_train.cost(result_info.stn_ord_TS, result_info.stn_ord_TT) << ' '
         << seat_num_T << '\n';
 }
@@ -636,59 +439,4 @@ void TrainManager::clean() {
   train_hid_seats_map_.clear();
   stn_hid_train_info_multimap_.clear();
 }
-
-/******** TicketOrderManager *********/
-
-TicketOrderManager::TicketOrderManager(std::filesystem::path path, Messenger &msgr)
-: order_id_order_map_(path.string() + "-otime", BUF_CAPA, K_DIST),
-  user_hid_order_id_map_(path.string() + "-huid_order", BUF_CAPA, K_DIST),
-  train_hid_order_id_map_(path.string() + "-htid_order", BUF_CAPA, K_DIST),
-  order_id_allocator(path.string() + "-oid_alloc"),
-  msgr_(msgr) {}
-
-void TicketOrderManager::record_buy_ticket(TicketOrderType &ticket_order) {
-  ticket_order.order_id_ = new_order_id();
-  order_id_order_map_.insert(ticket_order.order_id_, ticket_order);
-  user_hid_order_id_map_.insert(ticket_order.username_.hash(), ticket_order.order_id_);
-  train_hid_order_id_map_.insert(
-    ism::make_pair(ticket_order.train_id_.hash(), ticket_order.train_dep_date_.count()),
-    ticket_order.order_id_);
-}
-
-void TicketOrderManager::QueryOrder(const username_t &username) {
-  // ... Yes, it's a bit too slow.
-  auto order_list = user_hid_order_id_map_.search(username.hash());
-  msgr_ << order_list.size() << '\n';
-  for(auto &order_id : order_list) {
-    msgr_ << order_id_order_map_.search(order_id)->string() << '\n';
-  }
-}
-
-order_id_t TicketOrderManager::find_order_id(const username_t &username, order_id_t order_rank) {
-  auto order_list = user_hid_order_id_map_.search(username.hash());
-  if(order_list.size() < order_rank)
-    return INVALID_ORDER_ID;
-  return order_list[order_rank - 1];
-}
-
-ism::vector<order_id_t>
-TicketOrderManager::get_ticket_related_orders(const train_id_t &train_id, date_md_t train_dep_date) {
-  return train_hid_order_id_map_.search(ism::make_pair(train_id.hash(), train_dep_date.count()));
-}
-
-TicketOrderType TicketOrderManager::get_order(order_id_t order_id) {
-  return *order_id_order_map_.search(order_id);
-}
-
-ism::Bplustree<order_id_t, TicketOrderType>::iterator
-TicketOrderManager::get_order_iter(order_id_t order_id) {
-  return order_id_order_map_.find(order_id);
-}
-
-void TicketOrderManager::clean() {
-  user_hid_order_id_map_.clear();
-  train_hid_order_id_map_.clear();
-  order_id_allocator.clear();
-}
-
 }
