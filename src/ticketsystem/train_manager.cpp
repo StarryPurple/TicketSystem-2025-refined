@@ -2,7 +2,7 @@
 
 namespace ticket_system {
 
-static constexpr int BUF_CAPA = 192, K_DIST = 2;
+static constexpr int BUF_CAPA = 96, K_DIST = 2;
 
 TrainManager::TrainManager(std::filesystem::path path, ism::Messenger &msgr)
 : train_hid_train_map_(path.string() + "-htid", BUF_CAPA, K_DIST),
