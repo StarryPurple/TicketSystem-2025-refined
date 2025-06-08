@@ -2,7 +2,7 @@
 
 namespace ticket_system {
 
-static constexpr int BUF_CAPA = 16, K_DIST = 2;
+static constexpr int BUF_CAPA = 192, K_DIST = 2;
 
 UserManager::UserManager(std::filesystem::path path, ism::Messenger &msgr)
 : user_hid_user_map_(path.string() + "-huid", BUF_CAPA, K_DIST), msgr_(msgr) {}
