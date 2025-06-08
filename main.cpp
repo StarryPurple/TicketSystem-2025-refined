@@ -202,6 +202,8 @@ void TicketSystemTest() {
   // fs::remove_all(data_dir);
   fs::create_directory(data_dir);
   auto name_base = data_dir / "ts";
+  std::ios::sync_with_stdio(false);
+  std::cin.tie(nullptr);
   ts::TicketSystem ticket_system(name_base);
   ticket_system.work_loop();
 }
