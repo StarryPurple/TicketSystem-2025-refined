@@ -285,9 +285,8 @@ Bplustree<KeyT, ValueT, KeyCompare>::find_upper(const KeyT &key) {
   auto pos = node->locate_key(key, key_compare_);
   if(pos == node->size()) {
     auto rht_ptr = node->rht_ptr();
-    if(rht_ptr == NULL_PAGE_ID)
-      return end();
-    else visitor = buf_pool_.visitor(rht_ptr);
+    if(rht_ptr == NULL_PAGE_ID) return end();
+    visitor = buf_pool_.visitor(rht_ptr);
     pos = 0;
   }
   return iterator(&buf_pool_, std::move(visitor), pos);

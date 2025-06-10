@@ -17,7 +17,7 @@ void TicketSystemTest();
 void LocalTicketSystemTest();
 
 int main() {
-  LocalTicketSystemTest();
+  TicketSystemTest();
   return 0;
 }
 
