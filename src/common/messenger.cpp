@@ -17,11 +17,6 @@ Messenger& Messenger::operator<<(const std::string &msg) {
   return *this;
 }
 
-Messenger& Messenger::operator<<(std::string &&msg) {
-  msg_ += std::move(msg); // NOLINT
-  return *this;
-}
-
 /*
 Messenger& Messenger::operator<<(const date_time_t &date_time) {
   format_to(date_time, msg_);

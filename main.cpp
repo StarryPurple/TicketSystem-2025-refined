@@ -17,7 +17,7 @@ void TicketSystemTest();
 void LocalTicketSystemTest();
 
 int main() {
-  TicketSystemTest();
+  LocalTicketSystemTest();
   return 0;
 }
 
@@ -251,7 +251,7 @@ void LocalTicketSystemTest() {
   auto time_beg = std::chrono::high_resolution_clock::now();
 
   for(const auto &[name, pack] : tests) {
-    // if(name != "pressure_2_easy" || name != "pressure_3_easy") continue;
+    // if(name != "basic_4") continue;
     fs::remove_all(data_dir);
     fs::create_directory(data_dir);
     system(("echo \"\" >> " + result_file).c_str());

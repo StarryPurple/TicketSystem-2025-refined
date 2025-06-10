@@ -43,6 +43,9 @@ public:
 
   public:
     iterator() = default;
+
+    // invalid ones can have a non-null buf_pool_ pointer.
+    bool is_valid() const { return visitor_.is_valid(); }
     void reset() {
       buf_pool_ = nullptr;
       visitor_.drop();
@@ -90,7 +93,9 @@ public:
   iterator begin();
   iterator end() { return iterator(&buf_pool_, Visitor(), 0); }
 
+  // return end() if failed.
   iterator find(const KeyT &key);
+  // the first that holds a key not lower than given key.
   iterator find_upper(const KeyT &key);
 
 private:

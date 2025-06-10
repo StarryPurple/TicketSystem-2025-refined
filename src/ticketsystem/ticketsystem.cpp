@@ -165,28 +165,34 @@ void TicketSystem::RefundTicket() {
     msgr_ << "-1\n";
     return;
   }
-  auto target_order_id = order_mgr_.find_order_id(cmd.username, cmd.order_rank);
-  if(target_order_id == INVALID_ORDER_ID) {
+  auto user_target_order_iter = order_mgr_.find_order_iter(cmd.username, cmd.order_rank);
+  if(!user_target_order_iter.is_valid()) {
     msgr_ << "-1\n";
     return;
   }
-  auto target_order_visitor = order_mgr_.get_order_visitor(target_order_id);
-  if(target_order_visitor.as()->has_refunded()) {
+  if(user_target_order_iter.view().second.has_refunded()) {
     msgr_ << "-1\n";
     return;
   }
-  auto &target_order = *target_order_visitor.as_mut();
+  auto &user_target_order = (*user_target_order_iter).second;
 
   auto seat_status_iter = train_mgr_.get_seat_status_iter(
-    target_order.train_id(), target_order.train_dep_date());
+    user_target_order.train_id(), user_target_order.train_dep_date());
   auto &seat_status = (*seat_status_iter).second;
-  auto order_id_list = order_mgr_.get_ticket_related_orders(
-    target_order.train_id(), target_order.train_dep_date());
 
   // refund target order
-  if(target_order.is_succeeded()) // It doesn't affect test2
-    seat_status.restore_seat_num(target_order.ticket_num(), target_order.from_stn_ord(), target_order.dest_stn_ord());
-  target_order.set_refunded();
+  if(user_target_order.is_succeeded()) // It doesn't affect test2(basic2?)
+    seat_status.restore_seat_num(
+      user_target_order.ticket_num(), user_target_order.from_stn_ord(), user_target_order.dest_stn_ord());
+  user_target_order.set_refunded();
+
+  order_mgr_.update_train_order_stat(user_target_order);
+
+  order_mgr_.recover_ticket(user_target_order, seat_status);
+
+  /*
+  auto order_id_list = order_mgr_.get_ticket_related_orders(
+    target_order.train_id(), target_order.train_dep_date());
 
   // try to recover other orders.
   for(auto order_id : order_id_list) {
@@ -202,6 +208,7 @@ void TicketSystem::RefundTicket() {
     order.set_success();
     seat_status.consume_seat_num(order.ticket_num(), order.from_stn_ord(), order.dest_stn_ord());
   }
+  */
     msgr_ << "0\n";
 }
 

@@ -16,7 +16,6 @@ public:
   Messenger& operator<<(char msg);
   Messenger& operator<<(const char *msg);
   Messenger& operator<<(const std::string &msg);
-  Messenger& operator<<(std::string &&msg);
   // Messenger& operator<<(const date_time_t &date_time);
   template<size_t N>
   Messenger& operator<<(const array<char, N> &msg);
@@ -29,6 +28,7 @@ public:
   void print_err() const { std::cerr << msg_; }
   [[nodiscard]]
   std::string str() const { return msg_; }
+  std::string& str_ref() { return msg_; }
   void reset() { msg_.clear(); }
   void flush() { std::cout.flush(); std::cerr.flush(); }
 

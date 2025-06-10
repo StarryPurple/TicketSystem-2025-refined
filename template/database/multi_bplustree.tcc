@@ -21,8 +21,8 @@ MultiBplustree<KeyT, ValueT, KeyCompare, ValueCompare>::~MultiBplustree() {
 template <class KeyT, class ValueT, class KeyCompare, class ValueCompare>
 vector<ValueT> MultiBplustree<KeyT, ValueT, KeyCompare, ValueCompare>::search(const KeyT &key) {
   vector<ValueT> result;
-  for(auto it = find_upper(key); it != end() && key_equal((*it).first, key); ++it)
-    result.push_back((*it).second);
+  for(auto it = find_upper(key); it != end() && key_equal(it.view().first, key); ++it)
+    result.push_back(it.view().second);
   return result;
 }
 
@@ -271,12 +271,39 @@ MultiBplustree<KeyT, ValueT, KeyCompare, ValueCompare>::find_upper(const KeyT &k
   auto pos = node->locate_key(key, key_compare_);
   if(pos == node->size()) {
     auto rht_ptr = node->rht_ptr();
-    if(rht_ptr == NULL_PAGE_ID) visitor.drop();
-    else visitor = buf_pool_.visitor(rht_ptr);
+    if(rht_ptr == NULL_PAGE_ID) return end();
+    visitor = buf_pool_.visitor(rht_ptr);
     pos = 0;
   }
   return iterator(&buf_pool_, std::move(visitor), pos);
 }
+
+template <class KeyT, class ValueT, class KeyCompare, class ValueCompare>
+typename MultiBplustree<KeyT, ValueT, KeyCompare, ValueCompare>::iterator
+MultiBplustree<KeyT, ValueT, KeyCompare, ValueCompare>::find(const KeyT &key, const ValueT &value) {
+  if(root_ptr_ == NULL_PAGE_ID)
+    return end();
+  Visitor visitor = buf_pool_.visitor(root_ptr_);
+  while(!visitor.template as<Base>()->is_leaf()) {
+    auto node = visitor.template as<Internal>();
+    auto pos = node->locate_pair(key, value, kv_compare_);
+    auto ptr = node->child(pos);
+    visitor = buf_pool_.visitor(ptr);
+  }
+  auto node = visitor.template as<Leaf>();
+  auto pos = node->locate_pair(key, value, kv_compare_);
+  if(pos == node->size()) {
+    auto rht_ptr = node->rht_ptr();
+    if(rht_ptr == NULL_PAGE_ID) return end();
+    visitor = buf_pool_.visitor(rht_ptr);
+    node = visitor.template as<Leaf>();
+    pos = 0;
+  }
+  if(!(key_equal(node->key(pos), key) && value_equal(node->value(pos), value)))
+    return end();
+  return iterator(&buf_pool_, std::move(visitor), pos);
+}
+
 
 }
 

@@ -21,8 +21,8 @@ Bplustree<KeyT, ValueT, KeyCompare>::~Bplustree() {
 template <class KeyT, class ValueT, class KeyCompare>
 optional<ValueT> Bplustree<KeyT, ValueT, KeyCompare>::search(const KeyT &key) {
   auto it = find_upper(key);
-  if(it != end() && key_equal((*it).first, key))
-    return make_optional<ValueT>((*it).second);
+  if(it != end() && key_equal(it.view().first, key))
+    return make_optional<ValueT>(it.view().second);
   return optional<ValueT>();
 }
 
@@ -264,7 +264,7 @@ Bplustree<KeyT, ValueT, KeyCompare>::find(const KeyT &key) {
   auto it = find_upper(key);
   if(it == end())
     return it;
-  if(!key_equal((*it).first, key))
+  if(!key_equal(it.view().first, key))
     return end();
   return it;
 }

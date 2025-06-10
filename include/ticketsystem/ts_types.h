@@ -7,6 +7,7 @@
 #include "array.h"
 #include "ts_time.h"
 #include "algorithm.h"
+#include "messenger.h"
 #include "index_pool.h"
 
 namespace ticket_system {
@@ -368,6 +369,10 @@ class TicketOrderType {
 
 public:
 
+  auto operator<=>(const TicketOrderType &other) const {
+    return order_id_ <=> other.order_id_;
+  }
+
   enum class OrderStatus {
     Invalid,
     Success,
@@ -410,11 +415,6 @@ public:
   stn_num_t from_stn_ord() const { return from_stn_ord_; }
   stn_num_t dest_stn_ord() const { return dest_stn_ord_; }
 
-  /*
-  auto operator<=>(const TicketOrderType &other) const {
-    return order_id_ <=> other.order_id_;
-  }
-  */
 
   std::string string() const {
     std::string ret;
@@ -435,6 +435,30 @@ public:
     ret += ism::itos(single_price_); ret += ' ';
     ret += ism::itos(ticket_num_);
     return ret;
+  }
+
+  void append_to(std::string &out) const {
+    out.reserve(out.length() + 128);
+    out += '[';
+    switch(status_) {
+    case OrderStatus::Success:  out += "success";  break;
+    case OrderStatus::Pending:  out += "pending";  break;
+    case OrderStatus::Refunded: out += "refunded"; break;
+    default: throw ism::runtime_error("Ticket system : Invalid order status.");
+    }
+    out  += "] ";
+    out += train_id_.c_str(); out += ' ';
+    out += from_stn_.c_str(); out += ' ';
+    out += from_date_time_.string(); out += " -> ";
+    out += dest_stn_.c_str(); out += ' ';
+    out += dest_date_time_.string(); out += ' ';
+    out += ism::itos(single_price_); out += ' ';
+    out += ism::itos(ticket_num_);
+  }
+
+  friend ism::Messenger& operator<<(ism::Messenger &msgr, const TicketOrderType &ticket_order) {
+    ticket_order.append_to(msgr.str_ref());
+    return msgr;
   }
 
 private:

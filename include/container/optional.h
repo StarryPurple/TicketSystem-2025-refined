@@ -5,6 +5,8 @@
 
 namespace insomnia {
 
+inline struct nullopt_t {} nullopt;
+
 template <class T>
 class optional {
 private:
@@ -30,6 +32,7 @@ public:
   optional(Args &&...);
   template <class ...Args>
   optional& operator=(Args &&...) noexcept;
+  explicit optional(nullopt_t) : optional() {}
 
 
   bool has_value() const { return _has_value; }
