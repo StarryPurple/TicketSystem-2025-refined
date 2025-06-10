@@ -22,15 +22,15 @@ void TrainManager::AddTrain(const TrainType &train) {
 
 void TrainManager::DeleteTrain(const train_id_t &train_id) {
   auto htid = train_id.hash();
-  const auto it = train_hid_train_map_.find(htid);
-  if(it == train_hid_train_map_.end()) {
+  if(const auto it = train_hid_train_map_.find(htid); it == train_hid_train_map_.end()) {
+    msgr_ << "-1\n";
+    return;
+  } else if(const auto &train = (*it).second; train.has_released_) {
     msgr_ << "-1\n";
     return;
   }
-  if(const auto &train = (*it).second; train.has_released_) {
-    msgr_ << "-1\n";
-    return;
-  }
+  // the existence of iterator prevents the htid from being removed.
+  // So don't let the iterator live that long.
   train_hid_train_map_.remove(htid);
     msgr_ << "0\n";
 }

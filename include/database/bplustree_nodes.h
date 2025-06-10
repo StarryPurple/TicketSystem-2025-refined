@@ -5,6 +5,8 @@
 
 namespace insomnia {
 
+inline constexpr size_t NODE_CAPACITY_LIM = 0;
+
 class BptNodeBase {
 public:
 
@@ -39,7 +41,7 @@ class MultiBptInternalNode : public BptNodeBase {
     page_id_t child;
   };
 
-  static constexpr int CAPACITY = std::max(8ul,
+  static constexpr size_t CAPACITY = std::max(NODE_CAPACITY_LIM,
     SectorAlignedSize(sizeof(Storage)) / sizeof(Storage));
 
 public:
@@ -83,7 +85,7 @@ class BptLeafNode : public BptNodeBase {
     KeyT key;
     ValueT value;
   };
-  static constexpr int CAPACITY = std::max(8ul,
+  static constexpr size_t CAPACITY = std::max(NODE_CAPACITY_LIM,
     (SectorAlignedSize(sizeof(Storage) + sizeof(page_id_t)) - sizeof(page_id_t)) / sizeof(Storage));
 
 public:
@@ -129,7 +131,7 @@ class BptInternalNode : public BptNodeBase {
     page_id_t child;
   };
 
-  static constexpr int CAPACITY = std::max(8ul,
+  static constexpr size_t CAPACITY = std::max(NODE_CAPACITY_LIM,
     SectorAlignedSize(sizeof(Storage)) / sizeof(Storage));
 
 public:

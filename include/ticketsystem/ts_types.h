@@ -31,7 +31,7 @@ using mail_addr_t  = ascii_str_t<30>;
 using access_lvl_t = short;
 constexpr access_lvl_t HIGHEST_ACCESS_LVL = 10;
 
-constexpr size_t MAX_STATION_NUM = 30;
+constexpr size_t MAX_STATION_NUM = 20;
 using time_hm_t       = TimeHM;
 using time_dur_t      = minutes;
 using dur_list_t      = ism::array<time_dur_t, MAX_STATION_NUM>;
@@ -58,6 +58,9 @@ constexpr order_id_t INVALID_ORDER_ID = ism::NULL_INDEX;
 // You can use some CRTP strategies.
 template <class DerivedCmd>
 struct CommandBase {
+  void reset() {
+    throw ism::runtime_error("Unimplemented command reset mechanic.");
+  }
   void handle(char par_name, const char *beg, size_t n) {
     throw ism::runtime_error("Unimplemented command handler.");
   }
@@ -247,7 +250,6 @@ public:
     const dur_list_t &travel_time_list, const dur_list_t &stopover_time_list,
     const date_md_t &begin_date, const date_md_t &final_date,
     const train_type_t &train_type, bool has_released) {
-
     train_id_     = train_id;
     max_seat_num_ = seat_num;
     stn_num_      = stn_num;
@@ -416,6 +418,7 @@ public:
 
   std::string string() const {
     std::string ret;
+    ret.reserve(128);
     ret += '[';
     switch(status_) {
     case OrderStatus::Success:  ret += "success";  break;

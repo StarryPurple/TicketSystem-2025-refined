@@ -1,5 +1,6 @@
 #include <iostream>
 #include <filesystem>
+#include <chrono>
 
 #include "vector.h"
 #include "array.h"
@@ -10,6 +11,14 @@
 #include "ts_types.h"
 #include "ts_time.h"
 #include "ticketsystem.h"
+
+void MultiBptTest();
+void TicketSystemTest();
+
+int main() {
+  TicketSystemTest();
+  return 0;
+}
 
 uint64_t hash1(const std::string &str) {
   uint64_t hash = 2166136261;
@@ -208,24 +217,23 @@ void TicketSystemTest() {
   ticket_system.work_loop();
 }
 
-/*
+
 ism::vector<ism::pair<std::string, ism::vector<std::string>>> tests = {
-  // {std::string("basic_1"), ism::vector<std::string>{"1"}},
-  // {std::string("basic_2"), ism::vector<std::string>{"2"}},
-  // {std::string("basic_3"), ism::vector<std::string>{"3", "4", "5", "6", "7"}},
-  // {std::string("basic_4"), ism::vector<std::string>{"8", "9", "10", "11", "12"}},
-  // {std::string("basic_5"), ism::vector<std::string>{"13", "14", "15", "16", "17", "18", "19", "20", "21", "22"}},
-  // {std::string("basic_6"), ism::vector<std::string>{"23", "24", "25", "26", "27", "28", "29", "30", "31", "32"}},
-  // {std::string("basic_extra"), ism::vector<std::string>{"33", "34", "35", "36", "37", "38", "39", "40", "41", "42"}},
-  // {std::string("pressure_1_easy"), ism::vector<std::string>{"43", "44", "45", "46", "47", "48", "49", "50", "51", "52"}},
-  // {std::string("pressure_2_easy"), ism::vector<std::string>{"53", "54", "55", "56", "57", "58", "59", "60", "61", "62"}},
+  {std::string("basic_1"), ism::vector<std::string>{"1"}},
+  {std::string("basic_2"), ism::vector<std::string>{"2"}},
+  {std::string("basic_3"), ism::vector<std::string>{"3", "4", "5", "6", "7"}},
+  {std::string("basic_4"), ism::vector<std::string>{"8", "9", "10", "11", "12"}},
+  {std::string("basic_5"), ism::vector<std::string>{"13", "14", "15", "16", "17", "18", "19", "20", "21", "22"}},
+  {std::string("basic_6"), ism::vector<std::string>{"23", "24", "25", "26", "27", "28", "29", "30", "31", "32"}},
+  {std::string("basic_extra"), ism::vector<std::string>{"33", "34", "35", "36", "37", "38", "39", "40", "41", "42"}},
+  {std::string("pressure_1_easy"), ism::vector<std::string>{"43", "44", "45", "46", "47", "48", "49", "50", "51", "52"}},
+  {std::string("pressure_2_easy"), ism::vector<std::string>{"53", "54", "55", "56", "57", "58", "59", "60", "61", "62"}},
   {std::string("pressure_3_easy"), ism::vector<std::string>{"63", "64", "65", "66", "67", "68", "69", "70", "71", "72"}},
-  // {std::string("pressure_1_hard"), ism::vector<std::string>{"73", "74", "75", "76", "77", "78", "79", "80", "81", "82"}},
-  // {std::string("pressure_2_hard"), ism::vector<std::string>{"83", "84", "85", "86", "87", "88", "89", "90", "91", "92"}},
-  // {std::string("pressure_3_hard"), ism::vector<std::string>{"93", "94", "95", "96", "97", "98", "99", "100", "101", "102"}},
+  {std::string("pressure_1_hard"), ism::vector<std::string>{"73", "74", "75", "76", "77", "78", "79", "80", "81", "82"}},
+  {std::string("pressure_2_hard"), ism::vector<std::string>{"83", "84", "85", "86", "87", "88", "89", "90", "91", "92"}},
+  {std::string("pressure_3_hard"), ism::vector<std::string>{"93", "94", "95", "96", "97", "98", "99", "100", "101", "102"}},
 };
 
-#include <chrono>
 
 void LocalTicketSystemTest() {
   auto data_dir = fs::current_path() / "ts_localtest";
@@ -298,10 +306,4 @@ void LocalTicketSystemTest() {
   auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(time_end - time_beg).count();
   system(("echo \"\" >> " + result_file).c_str());
   system(("echo \"Total time use: " + ism::itos(dur) + "ms.\" >> " + result_file).c_str());
-}
-*/
-
-int main() {
-  TicketSystemTest();
-  return 0;
 }

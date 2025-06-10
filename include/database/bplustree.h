@@ -43,6 +43,11 @@ public:
 
   public:
     iterator() = default;
+    void reset() {
+      buf_pool_ = nullptr;
+      visitor_.drop();
+      pos_ = 0;
+    }
 
     pair<const KeyT&, ValueT&> operator*() {
       if(!visitor_.is_valid()) throw invalid_iterator("invalid bpt iterator");
