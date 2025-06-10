@@ -2,7 +2,7 @@
 
 namespace ticket_system {
 
-static constexpr int BUF_CAPA = 256, K_DIST = 2;
+static constexpr int BUF_CAPA = 150, K_DIST = 2;
 
 TicketOrderManager::TicketOrderManager(std::filesystem::path path, ism::Messenger &msgr)
 : index_pool_(path.string() + "-order_id"),
