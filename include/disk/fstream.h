@@ -71,6 +71,7 @@ public:
   void write_meta(const Meta *data) requires (!EmptyMeta<Meta>);
   bool read_meta(Meta *data) requires (!EmptyMeta<Meta>); // returns false if read failed.
   page_id_t alloc() { return index_allocator_.alloc(); }
+  page_id_t max_page_id() const { return index_allocator_.max_index(); }
   void dealloc(page_id_t page_id) { index_allocator_.dealloc(page_id); }
   void clear();
 private:

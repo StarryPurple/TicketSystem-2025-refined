@@ -170,12 +170,12 @@ void TicketSystem::RefundTicket() {
     msgr_ << "-1\n";
     return;
   }
-  auto target_order_iter = order_mgr_.get_order_iter(target_order_id);
-  if(target_order_iter.view().second.has_refunded()) {
+  auto target_order_visitor = order_mgr_.get_order_visitor(target_order_id);
+  if(target_order_visitor.as()->has_refunded()) {
     msgr_ << "-1\n";
     return;
   }
-  auto &target_order = (*target_order_iter).second;
+  auto &target_order = *target_order_visitor.as_mut();
 
   auto seat_status_iter = train_mgr_.get_seat_status_iter(
     target_order.train_id(), target_order.train_dep_date());
@@ -192,12 +192,13 @@ void TicketSystem::RefundTicket() {
   for(auto order_id : order_id_list) {
     if(order_id == target_order_id) continue;
 
-    auto order_iter = order_mgr_.get_order_iter(order_id);
-    auto &order = (*order_iter).second;
-    if(!order.is_pending()) continue;
-    if(order.ticket_num() >
-      seat_status.available_seat_num(order.from_stn_ord(), order.dest_stn_ord()))
+    auto order_visitor = order_mgr_.get_order_visitor(order_id);
+    auto &order_view = *order_visitor.as();
+    if(!order_view.is_pending()) continue;
+    if(order_view.ticket_num() >
+      seat_status.available_seat_num(order_view.from_stn_ord(), order_view.dest_stn_ord()))
       continue;
+    auto &order = *order_visitor.as_mut();
     order.set_success();
     seat_status.consume_seat_num(order.ticket_num(), order.from_stn_ord(), order.dest_stn_ord());
   }

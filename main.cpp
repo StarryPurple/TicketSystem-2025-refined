@@ -14,11 +14,14 @@
 
 void MultiBptTest();
 void TicketSystemTest();
+void LocalTicketSystemTest();
 
 int main() {
   TicketSystemTest();
   return 0;
 }
+
+/*********** implementations ************/
 
 uint64_t hash1(const std::string &str) {
   uint64_t hash = 2166136261;
