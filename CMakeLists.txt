@@ -13,8 +13,7 @@ add_subdirectory(src)
 # add_subdirectory(test)
 
 add_executable(code main.cpp)
+add_executable(tester test.cpp)
 
-target_link_libraries(code PRIVATE
-    IncludeModule
-    SrcModule
-)
+target_link_libraries(code PRIVATE IncludeModule SrcModule)
+target_link_libraries(tester PRIVATE IncludeModule SrcModule)
