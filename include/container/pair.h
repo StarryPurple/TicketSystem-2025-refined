@@ -18,6 +18,8 @@ struct pair {
   constexpr auto operator<=>(const pair &other) const = default;
 };
 
+// feel free.
+
 template <class T>
 struct unwrap_decay_reference {
   using type = std::decay_t<T>;
@@ -30,6 +32,8 @@ struct unwrap_decay_reference<std::reference_wrapper<T>> {
 
 template <class T>
 using unwrap_decay_reference_t = typename unwrap_decay_reference<T>::type;
+
+// ... just return {std::forward<T1>(x), std::forward<T2>(y)}.
 
 template <class T1, class T2>
 pair<unwrap_decay_reference_t<T1>, unwrap_decay_reference_t<T2>> make_pair(T1 &&x, T2 &&y) {
