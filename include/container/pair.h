@@ -18,9 +18,22 @@ struct pair {
   constexpr auto operator<=>(const pair &other) const = default;
 };
 
+template <class T>
+struct unwrap_decay_reference {
+  using type = std::decay_t<T>;
+};
+
+template <class T>
+struct unwrap_decay_reference<std::reference_wrapper<T>> {
+  using type = T&;
+};
+
+template <class T>
+using unwrap_decay_reference_t = typename unwrap_decay_reference<T>::type;
+
 template <class T1, class T2>
-pair<T1, T2> make_pair(T1 &&x, T2 &&y) {
-  return pair<T1, T2>(std::forward<T1>(x), std::forward<T2>(y));
+pair<unwrap_decay_reference_t<T1>, unwrap_decay_reference_t<T2>> make_pair(T1 &&x, T2 &&y) {
+  return pair<unwrap_decay_reference_t<T1>, unwrap_decay_reference_t<T2>>(std::forward<T1>(x), std::forward<T2>(y));
 }
 
 }

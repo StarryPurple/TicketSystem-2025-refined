@@ -55,17 +55,17 @@ public:
     pair<const KeyT&, ValueT&> operator*() {
       if(!visitor_.is_valid()) throw invalid_iterator("invalid bpt iterator");
       const auto ptr = visitor_.template as_mut<Leaf>();
-      return make_pair(ptr->key(pos_), ptr->value(pos_));
+      return insomnia::make_pair(std::ref(ptr->key(pos_)), std::ref(ptr->value(pos_))); // ADL problems
     }
     pair<const KeyT&, const ValueT&> operator*() const {
       if(!visitor_.is_valid()) throw invalid_iterator("invalid bpt iterator");
       auto ptr = visitor_.template as<Leaf>();
-      return make_pair(ptr->key(pos_), ptr->value(pos_));
+      return insomnia::make_pair(std::ref(ptr->key(pos_)), std::ref(ptr->value(pos_)));
     }
     pair<const KeyT&, const ValueT&> view() const {
       if(!visitor_.is_valid()) throw invalid_iterator("invalid bpt iterator");
       auto ptr = visitor_.template as<Leaf>();
-      return make_pair(ptr->key(pos_), ptr->value(pos_));
+      return insomnia::make_pair(std::ref(ptr->key(pos_)), std::ref(ptr->value(pos_)));
     }
 
     iterator& operator++();

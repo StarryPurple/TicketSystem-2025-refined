@@ -55,7 +55,7 @@ void TrainManager::ReleaseTrain(const train_id_t &train_id) {
   train_seat_status.initialize(train.max_seat_num_, train.stn_num_);
   for(days_count_t i = train.start_date_.count(); i <= train.final_date_.count(); ++i)
     train_hid_seats_map_.insert(
-      ism::pair<train_hid_t, days_count_t>(htid, i), train_seat_status);
+      ism::make_pair(i, htid), train_seat_status);
     msgr_ << "0\n";
 }
 
@@ -75,7 +75,7 @@ void TrainManager::QueryTrain(const train_id_t &train_id, date_md_t train_depart
   static seat_num_list_t seat_num_list;
   if(train.has_released_) {
     auto it2 = train_hid_seats_map_.find(
-      ism::pair<train_hid_t, days_count_t>(htid, train_departure_date.count()));
+      ism::make_pair(train_departure_date.count(), htid));
     seat_num_list = (*it2).second.seat_num_list_;
   } else {
     for(size_t i = 0; i < train.stn_num_; ++i)
@@ -150,7 +150,7 @@ void TrainManager::QueryTicket(
     auto time = train.arrival_time_list_[dest_ord] - train.departure_time_list_[from_ord];
     auto cost = train.accumulative_price_list_[dest_ord] - train.accumulative_price_list_[from_ord];
     auto seats_it = train_hid_seats_map_.find(
-      ism::pair<train_hid_t, days_count_t>(train.hash(), train_departure_date.count()));
+      ism::make_pair(train_departure_date.count(), train.hash()));
     auto &train_seat_status = (*seats_it).second;
     auto available_seat_num = train_seat_status.available_seat_num(from_ord, dest_ord);
     ism::Messenger tmp_msgr;
@@ -348,12 +348,12 @@ void TrainManager::QueryTransfer(
 
   const auto seat_num_list_S_it =
     train_hid_seats_map_.find(
-      ism::make_pair(result_info.from_train.hash(), result_info.from_train_dep_date.count()));
+      ism::make_pair(result_info.from_train_dep_date.count(), result_info.from_train.hash()));
   auto seat_num_S = (*seat_num_list_S_it).second.available_seat_num(
     result_info.stn_ord_SS, result_info.stn_ord_ST);
   const auto seat_num_list_T_it =
   train_hid_seats_map_.find(
-    ism::make_pair(result_info.dest_train.hash(), result_info.dest_train_dep_date.count()));
+    ism::make_pair(result_info.dest_train_dep_date.count(), result_info.dest_train.hash()));
   auto seat_num_T = (*seat_num_list_T_it).second.available_seat_num(
     result_info.stn_ord_TS, result_info.stn_ord_TT);
 
@@ -406,7 +406,7 @@ TicketOrderType TrainManager::BuyTicket(
     msgr_ << "-1\n";
     return {};
   }
-  auto seat_it = train_hid_seats_map_.find(ism::pair<train_hid_t, days_count_t>(thid, train_departure_date.count()));
+  auto seat_it = train_hid_seats_map_.find(ism::make_pair(train_departure_date.count(), thid));
   auto available_seats = seat_it.view().second.available_seat_num(from_ord, dest_ord);
   if(available_seats < ticket_num) {
     if(accept_waitlist) {
@@ -429,9 +429,9 @@ TicketOrderType TrainManager::BuyTicket(
     from_ord, dest_ord, train.cost(from_ord, dest_ord), ticket_num, train_departure_date};
 }
 
-ism::Bplustree<ism::pair<train_hid_t, days_count_t>, TrainSeatStatus>::iterator
+ism::Bplustree<ism::pair<days_count_t, train_hid_t>, TrainSeatStatus>::iterator
 TrainManager::get_seat_status_iter(const train_id_t &train_id, date_md_t train_dep_date) {
-  return train_hid_seats_map_.find(ism::pair<train_hid_t, days_count_t>(train_id.hash(), train_dep_date.count()));
+  return train_hid_seats_map_.find(ism::make_pair(train_dep_date.count(), train_id.hash()));
 }
 
 void TrainManager::clean() {

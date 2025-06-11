@@ -251,7 +251,7 @@ void LocalTicketSystemTest() {
   auto time_beg = std::chrono::high_resolution_clock::now();
 
   for(const auto &[name, pack] : tests) {
-    // if(name != "basic_4") continue;
+    // if(name != "pressure_3_hard") continue;
     fs::remove_all(data_dir);
     fs::create_directory(data_dir);
     system(("echo \"\" >> " + result_file).c_str());
