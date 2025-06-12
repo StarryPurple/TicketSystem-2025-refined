@@ -1,0 +1,285 @@
+/* General Body and Font Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #282c34; /* Dark background for overall app */
+    color: #abb2bf; /* Light gray text for general content */
+    margin: 0;
+    display: flex;
+    flex-direction: column; /* Stacks header, main-content vertically */
+    min-height: 100vh; /* Ensures content area takes full height */
+}
+
+/* Header Styles */
+.header {
+    background-color: #3e4451; /* Slightly lighter dark for header */
+    color: #61afef; /* Primary accent color for title */
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Subtle shadow at bottom */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0; /* Prevent header from shrinking */
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 2.2em;
+}
+
+/* Global Status Indicator */
+.header .status {
+    font-size: 1em;
+    padding: 5px 10px;
+    border-radius: 4px;
+    background-color: #21252b; /* Even darker background for status */
+    color: #fff; /* White text for status initially */
+}
+
+.header .status.connected {
+    background-color: #4CAF50; /* Green for connected */
+}
+
+.header .status.disconnected {
+    background-color: #f44336; /* Red for disconnected */
+}
+
+.header .status.error {
+    background-color: #FF9800; /* Orange for error */
+}
+
+/* Main Content Layout (Flexbox) */
+.main-content {
+    display: flex;
+    flex-grow: 1; /* Allows content area to fill remaining vertical space */
+}
+
+/* Sidebar Styles */
+.sidebar {
+    background-color: #3e4451; /* Same as header background */
+    padding: 20px;
+    width: 250px; /* Fixed width for sidebar */
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2); /* Shadow on the right side */
+    flex-shrink: 0; /* Prevent sidebar from shrinking */
+    overflow-y: auto; /* Enable scrolling for many menu items */
+}
+
+.sidebar h2 {
+    color: #c678dd; /* Purple accent for sidebar title */
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.5em;
+    text-align: center;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar ul li {
+    margin-bottom: 5px;
+}
+
+.sidebar ul li.category {
+    color: #56b6c2; /* Cyan accent for category titles */
+    font-weight: bold;
+    margin-top: 15px;
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    text-align: center;
+    border-bottom: 1px solid #4b5263; /* Separator for categories */
+    padding-bottom: 5px;
+}
+
+.sidebar ul li a {
+    display: block;
+    padding: 10px 15px;
+    color: #abb2bf; /* Default link text color */
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.2s, color 0.2s; /* Smooth transitions */
+}
+
+.sidebar ul li a:hover {
+    background-color: #4b5263; /* Darker background on hover */
+    color: #61afef; /* Accent color on hover */
+}
+
+.sidebar ul li a.active {
+    background-color: #61afef; /* Active link background color */
+    color: #282c34; /* Dark text for active link */
+    font-weight: bold;
+}
+
+/* Content Area Styles */
+.content-area {
+    flex-grow: 1; /* Allows content area to fill remaining horizontal space */
+    padding: 30px;
+    background-color: #21252b; /* Darkest background for content */
+    overflow-y: auto; /* Enable scrolling for content if it overflows */
+}
+
+/* Individual Command Module Styles */
+.command-module {
+    background-color: #3e4451; /* Slightly lighter dark for module cards */
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* Prominent shadow for cards */
+    margin-bottom: 30px; /* Spacing between modules if not hidden */
+}
+
+.command-module.hidden {
+    display: none; /* Hides modules that are not active */
+}
+
+.command-module h2 {
+    color: #98c379; /* Green accent for module titles */
+    margin-top: 0;
+    margin-bottom: 25px;
+    font-size: 1.8em;
+    text-align: center;
+    border-bottom: 1px solid #4b5263;
+    padding-bottom: 10px;
+}
+
+/* Form Group Layout */
+.command-form .form-group {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column; /* Labels and inputs stacked vertically */
+}
+
+.command-form label {
+    color: #abb2bf;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+/* Input and Select Styles */
+.command-form input[type="text"],
+.command-form input[type="password"],
+.command-form input[type="email"],
+.command-form input[type="number"],
+.command-form select {
+    padding: 10px 12px;
+    border: 1px solid #4b5263; /* Border color */
+    border-radius: 4px;
+    background-color: #282c34; /* Input field background */
+    color: #abb2bf; /* Input text color */
+    font-size: 1em;
+    outline: none; /* Remove default focus outline */
+    transition: border-color 0.2s; /* Smooth transition for focus */
+}
+
+.command-form input[type="text"]:focus,
+.command-form input[type="password"]:focus,
+.command-form input[type="email"]:focus,
+.command-form input[type="number"]:focus,
+.command-form select:focus {
+    border-color: #61afef; /* Accent color on focus */
+}
+
+/* Form Hint Text */
+.form-hint {
+    font-size: 0.85em;
+    color: #b0b0b0; /* Lighter gray for hints */
+    margin-top: -10px; /* Pulls hint closer to the field */
+    margin-bottom: 10px;
+    padding-left: 5px;
+}
+
+/* Button Styles */
+.command-form button[type="submit"],
+#confirmExitBackend,
+#confirmCleanData {
+    padding: 12px 25px;
+    background-color: #61afef; /* Primary button color */
+    color: #282c34; /* Dark text for primary button */
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    transition: background-color 0.2s, transform 0.1s; /* Smooth hover/active */
+    margin-top: 20px;
+    width: fit-content; /* Adjust width to content */
+}
+
+.command-form button[type="submit"]:hover,
+#confirmExitBackend:hover,
+#confirmCleanData:hover {
+    background-color: #569bd5; /* Slightly darker accent on hover */
+}
+
+.command-form button[type="submit"]:active,
+#confirmExitBackend:active,
+#confirmCleanData:active {
+    transform: translateY(1px); /* Slight press effect */
+}
+
+/* Result Area Styles */
+.result-area {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #282c34; /* Darker background for result display */
+    border-radius: 6px;
+    border: 1px solid #4b5263; /* Subtle border */
+}
+
+.result-area h3 {
+    color: #e06c75; /* Red accent for result title */
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+}
+
+.result-area p {
+    color: #abb2bf;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace; /* Monospaced font for code-like output */
+    white-space: pre-wrap; /* Preserve whitespace and wrap long lines */
+    word-break: break-all; /* Break long words */
+}
+
+/* Specific Result Message Colors */
+.result-area p.success { color: #98c379; } /* Green for success */
+.result-area p.failure { color: #e06c75; } /* Red for failure */
+.result-area p.info { color: #56b6c2; } /* Cyan for info */
+.result-area p.error { color: #f44336; } /* Brighter red for hard errors */
+
+
+/* Table Styles for detailed results (query_train, query_ticket, query_order) */
+.result-table {
+    width: 100%;
+    border-collapse: collapse; /* Collapse borders between cells */
+    margin-top: 15px;
+}
+
+.result-table th, .result-table td {
+    border: 1px solid #4b5263; /* Table cell borders */
+    padding: 10px;
+    text-align: left;
+    color: #abb2bf;
+}
+
+.result-table th {
+    background-color: #4b5263; /* Header row background */
+    color: #61afef; /* Header text color */
+    font-weight: bold;
+}
+
+.result-table tr:nth-child(even) {
+    background-color: #3e4451; /* Zebra striping for readability */
+}
+
+.result-table tr:hover {
+    background-color: #4b5263; /* Highlight row on hover */
+}
+
+/* Result Text Highlights - these are for specific data points within paragraphs or table cells */
+.result-text-highlight-1 { color: #61afef; } /* Primary accent: e.g., trainID, username */
+.result-text-highlight-2 { color: #98c379; } /* Green accent: e.g., name, station, time */
+.result-text-highlight-3 { color: #e5c07b; } /* Yellow/Orange accent: e.g., privilege, price, seat, count */
+.result-text-highlight-4 { color: #c678dd; } /* Purple accent: e.g., mail, type */
+.result-text-highlight-5 { color: #56b6c2; } /* Cyan accent: e.g., status, from/to station */

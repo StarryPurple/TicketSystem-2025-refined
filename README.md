@@ -1,6 +1,14 @@
 # TicketSystem-2025
 ACM Class 2025 Project
 
+---
+
+Web 前端部分代码由AI生成，仅供学习，本工程不拥有其代码所有权。
+
+其他部分还是我自己写的。。。
+
+---
+
 听说模板实现文件的后缀一般使用 ipp (inline) 而非 tcc (template)，
 
 有缘再改~

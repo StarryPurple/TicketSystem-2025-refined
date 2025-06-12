@@ -1,0 +1,14 @@
+{
+  "name": "ticketsystem-2025-refined",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/StarryPurple/TicketSystem-2025-refined.git"
+  },
+  "private": true
+}

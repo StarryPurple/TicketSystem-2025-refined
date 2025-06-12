@@ -46,6 +46,7 @@ void TicketSystem::run() {
     (this->*it->second)();
   } else throw ism::invalid_argument(std::string("unknown command:" + std::string(cmd_name)).c_str());
   msgr_.print_msg();
+  msgr_.flush(); // for web
   msgr_.reset();
 }
 

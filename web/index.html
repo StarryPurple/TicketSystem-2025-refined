@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>火车票务系统</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="header">
+    <h1>火车票务系统</h1>
+    <div id="globalStatus" class="status">Connecting...</div>
+</div>
+
+<div class="main-content">
+    <div class="sidebar">
+        <h2>功能列表</h2>
+        <ul>
+            <li><a href="#" data-command-target="home" class="active">首页</a></li>
+            <li class="category">用户管理</li>
+            <li><a href="#" data-command-target="add_user">注册用户</a></li>
+            <li><a href="#" data-command-target="login">登录</a></li>
+            <li><a href="#" data-command-target="logout">登出</a></li>
+            <li><a href="#" data-command-target="query_profile">查询资料</a></li>
+            <li><a href="#" data-command-target="modify_profile">修改资料</a></li>
+            <li class="category">列车管理</li>
+            <li><a href="#" data-command-target="add_train">添加列车</a></li>
+            <li><a href="#" data-command-target="delete_train">删除列车</a></li>
+            <li><a href="#" data-command-target="release_train">发布列车</a></li>
+            <li><a href="#" data-command-target="query_train">查询列车</a></li>
+            <li class="category">票务管理</li>
+            <li><a href="#" data-command-target="query_ticket">查询余票</a></li>
+            <li><a href="#" data-command-target="query_transfer">查询中转</a></li>
+            <li><a href="#" data-command-target="buy_ticket">购买车票</a></li>
+            <li><a href="#" data-command-target="query_order">查询订单</a></li>
+            <li><a href="#" data-command-target="refund_ticket">退票</a></li>
+            <li class="category">系统管理</li>
+            <li><a href="#" data-command-target="clean">清除数据</a></li>
+            <li><a href="#" data-command-target="exit_backend">退出后端</a></li>
+        </ul>
+    </div>
+
+    <div class="content-area">
+        <div id="home" class="command-module active">
+            <h2>欢迎使用火车票务系统</h2>
+            <p>请在左侧选择您要执行的操作。</p>
+        </div>
+
+        <div id="add_user" class="command-module hidden">
+            <h2>注册用户 (add_user)</h2>
+            <form class="command-form" data-command-name="add_user">
+                <div class="form-group">
+                    <label for="add_user_c">当前用户 (-c):</label>
+                    <input type="text" id="add_user_c" name="c" placeholder="创建第一个用户时可留空">
+                </div>
+                <div class="form-group">
+                    <label for="add_user_u">用户名 (-u):</label>
+                    <input type="text" id="add_user_u" name="u" required>
+                </div>
+                <div class="form-group">
+                    <label for="add_user_p">密码 (-p):</label>
+                    <input type="password" id="add_user_p" name="p" required>
+                </div>
+                <div class="form-group">
+                    <label for="add_user_n">真实姓名 (-n):</label>
+                    <input type="text" id="add_user_n" name="n" required>
+                </div>
+                <div class="form-group">
+                    <label for="add_user_m">邮箱 (-m):</label>
+                    <input type="email" id="add_user_m" name="m" required>
+                </div>
+                <div class="form-group">
+                    <label for="add_user_g">权限 (-g):</label>
+                    <input type="number" id="add_user_g" name="g" min="0" max="10" placeholder="创建第一个用户时无效" required>
+                </div>
+                <button type="submit">注册</button>
+            </form>
+            <div class="result-area">
+                <h3>操作结果:</h3>
+                <p id="add_userResult"></p>
+            </div>
+        </div>
+
+        <div id="login" class="command-module hidden">
+            <h2>登录 (login)</h2>
+            <form class="command-form" data-command-name="login">
+                <div class="form-group">
+                    <label for="login_u">用户名 (-u):</label>
+                    <input type="text" id="login_u" name="u" required>
+                </div>
+                <div class="form-group">
+                    <label for="login_p">密码 (-p):</label>
+                    <input type="password" id="login_p" name="p" required>
+                </div>
+                <button type="submit">登录</button>
+            </form>
+            <div class="result-area">
+                <h3>操作结果:</h3>
+                <p id="loginResult"></p>
+            </div>
+        </div>
+
+        <div id="logout" class="command-module hidden">
+            <h2>登出 (logout)</h2>
+            <form class="command-form" data-command-name="logout">
+                <div class="form-group">
+                    <label for="logout_u">用户名 (-u):</label>
+                    <input type="text" id="logout_u" name="u" required>
+                </div>
+                <button type="submit">登出</button>
+            </form>
+            <div class="result-area">
+                <h3>操作结果:</h3>
+                <p id="logoutResult"></p>
+            </div>
+        </div>
+
+        <div id="query_profile" class="command-module hidden">
+            <h2>查询资料 (query_profile)</h2>
+            <form class="command-form" data-command-name="query_profile">
+                <div class="form-group">
+                    <label for="query_profile_c">当前用户 (-c):</label>
+                    <input type="text" id="query_profile_c" name="c" required>
+                </div>
+                <div class="form-group">
+                    <label for="query_profile_u">被查询用户 (-u):</label>
+                    <input type="text" id="query_profile_u" name="u" required>
+                </div>
+                <button type="submit">查询</button>
+            </form>
+            <div class="result-area">
+                <h3>操作结果:</h3>
+                <p id="query_profileResult"></p>
+            </div>
+        </div>
+
+        <div id="modify_profile" class="command-module hidden">
+            <h2>修改资料 (modify_profile)</h2>
+            <form class="command-form" data-command-name="modify_profile">
+                <div class="form-group">
+                    <label for="modify_profile_c">当前用户 (-c):</label>
+                    <input type="text" id="modify_profile_c" name="c" required>
+                </div>
+                <div class="form-group">
+                    <label for="modify_profile_u">被修改用户 (-u):</label>
+                    <input type="text" id="modify_profile_u" name="u" required>
+                </div>
+                <p class="form-hint">以下参数可选择性填写：</p>
+                <div class="form-group">
+                    <label for="modify_profile_p">新密码 (-p):</label>
+                    <input type="password" id="modify_profile_p" name="p">
+                </div>
+                <div class="form-group">
+                    <label for="modify_profile_n">新真实姓名 (-n):</label>
+                    <input type="text" id="modify_profile_n" name="n">
+                </div>
+                <div class="form-group">
+                    <label for="modify_profile_m">新邮箱 (-m):</label>
+                    <input type="email" id="modify_profile_m" name="m">
+                </div>
+                <div class="form-group">
+                    <label for="modify_profile_g">新权限 (-g):</label>
+                    <input type="number" id="modify_profile_g" name="g" min="0" max="10">
+                </div>
+                <button type="submit">修改</button>
+            </form>
+            <div class="result-area">
+                <h3>操作结果:</h3>
+                <p id="modify_profileResult"></p>
+            </div>
+        </div>
+
+        <div id="add_train" class="command-module hidden">
+            <h2>添加列车 (add_train)</h2>
+            <form class="command-form" data-command-name="add_train">
+                <div class="form-group">
+                    <label for="add_train_i">车次ID (-i):</label>
+                    <input type="text" id="add_train_i" name="i" required>
+                </div>
+                <div class="form-group">
+                    <label for="add_train_n">站数 (-n):</label>
+                    <input type="number" id="add_train_n" name="n" min="2" max="100" required>
+                </div>
+                <div class="form-group">
+                    <label for="add_train_m">座位数 (-m):</label>
+                    <input type="number" id="add_train_m" name="m" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="add_train_s">车站列表 (-s) (例如: 站1|站2|站3):</label>
+                    <input type="text" id="add_train_s" name="s" required>
+                </div>
+                <div class="form-group">
+                    <label for="add_train_p">价格列表 (-p) (例如: 114|514):</label>
+                    <input type="text" id="add_train_p" name="p" required>
+                </div>
+                <div class="form-group">
+                    <label for="add_train_x">发车时间 (-x) (例如: 19:19):</label>
+                    <input type="text" id="add_train_x" name="x" placeholder="HH:MM" required>
+                </div>
+                <div class="form-group">
+                    <label for="add_train_t">旅行时间列表 (-t) (例如: 600|600):</label>
+                    <input type="text" id="add_train_t" name="t" required>
+                </div>
+                <div class="form-group">
+                    <label for="add_train_o">停靠时间列表 (-o) (例如: 5|5 或 _):</label>
+                    <input type="text" id="add_train_o" name="o" required>
+                </div>
+                <div class="form-group">
+                    <label for="add_train_d">售票日期范围 (-d) (例如: 06-01|08-17):</label>
+                    <input type="text" id="add_train_d" name="d" placeholder="MM-DD|MM-DD" required>
+                </div>
+                <div class="form-group">
+                    <label for="add_train_y">列车类型 (-y):</label>
+                    <input type="text" id="add_train_y" name="y" maxlength="1" required>
+                </div>
+                <button type="submit">添加</button>
+            </form>
+            <div class="result-area">
+                <h3>操作结果:</h3>
+                <p id="add_trainResult"></p>
+            </div>
+        </div>
+
+        <div id="delete_train" class="command-module hidden">
+            <h2>删除列车 (delete_train)</h2>
+            <form class="command-form" data-command-name="delete_train">
+                <div class="form-group">
+                    <label for="delete_train_i">车次ID (-i):</label>
+                    <input type="text" id="delete_train_i" name="i" required>
+                </div>
+                <button type="submit">删除</button>
+            </form>
+            <div class="result-area">
+                <h3>操作结果:</h3>
+                <p id="delete_trainResult"></p>
+            </div>
+        </div>
+
+        <div id="release_train" class="command-module hidden">
+            <h2>发布列车 (release_train)</h2>
+            <form class="command-form" data-command-name="release_train">
+                <div class="form-group">
+                    <label for="release_train_i">车次ID (-i):</label>
+                    <input type="text" id="release_train_i" name="i" required>
+                </div>
+                <button type="submit">发布</button>
+            </form>
+            <div class="result-area">
+                <h3>操作结果:</h3>
+                <p id="release_trainResult"></p>
+            </div>
+        </div>
+
+        <div id="query_train" class="command-module hidden">
+            <h2>查询列车 (query_train)</h2>
+            <form class="command-form" data-command-name="query_train">
+                <div class="form-group">
+                    <label for="query_train_i">车次ID (-i):</label>
+                    <input type="text" id="query_train_i" name="i" required>
+                </div>
+                <div class="form-group">
+                    <label for="query_train_d">查询日期 (-d) (例如: 07-01):</label>
+                    <input type="text" id="query_train_d" name="d" placeholder="MM-DD" required>
+                </div>
+                <button type="submit">查询</button>
+            </form>
+            <div class="result-area">
+                <h3>操作结果:</h3>
+                <p id="query_trainResult"></p>
+                <div id="query_trainDetails"></div> </div>
+        </div>
+
+        <div id="query_ticket" class="command-module hidden">
+            <h2>查询余票 (query_ticket)</h2>
+            <form class="command-form" data-command-name="query_ticket">
+                <div class="form-group">
+                    <label for="query_ticket_s">出发站 (-s):</label>
+                    <input type="text" id="query_ticket_s" name="s" required>
+                </div>
+                <div class="form-group">
+                    <label for="query_ticket_t">到达站 (-t):</label>
+                    <input type="text" id="query_ticket_t" name="t" required>
+                </div>
+                <div class="form-group">
+                    <label for="query_ticket_d">出发日期 (-d) (例如: 08-17):</label>
+                    <input type="text" id="query_ticket_d" name="d" placeholder="MM-DD" required>
+                </div>
+                <div class="form-group">
+                    <label for="query_ticket_p">排序方式 (-p):</label>
+                    <select id="query_ticket_p" name="p" required>
+                        <option value="time">time (按时间)</option>
+                        <option value="cost">cost (按价格)</option>
+                    </select>
+                </div>
+                <button type="submit">查询</button>
+            </form>
+            <div class="result-area">
+                <h3>操作结果:</h3>
+                <p id="query_ticketResult"></p>
+                <div id="query_ticketDetails"></div> </div>
+        </div>
+
+        <div id="query_transfer" class="command-module hidden">
+            <h2>查询中转 (query_transfer)</h2>
+            <form class="command-form" data-command-name="query_transfer">
+                <div class="form-group">
+                    <label for="query_transfer_s">出发站 (-s):</label>
+                    <input type="text" id="query_transfer_s" name="s" required>
+                </div>
+                <div class="form-group">
+                    <label for="query_transfer_t">到达站 (-t):</label>
+                    <input type="text" id="query_transfer_t" name="t" required>
+                </div>
+                <div class="form-group">
+                    <label for="query_transfer_d">出发日期 (-d) (例如: 08-17):</label>
+                    <input type="text" id="query_transfer_d" name="d" placeholder="MM-DD" required>
+                </div>
+                <div class="form-group">
+                    <label for="query_transfer_p">排序方式 (-p):</label>
+                    <select id="query_transfer_p" name="p" required>
+                        <option value="time">time (按时间)</option>
+                        <option value="cost">cost (按价格)</option>
+                    </select>
+                </div>
+                <button type="submit">查询</button>
+            </form>
+            <div class="result-area">
+                <h3>操作结果:</h3>
+                <p id="query_transferResult"></p>
+                <div id="query_transferDetails"></div> </div>
+        </div>
+
+        <div id="buy_ticket" class="command-module hidden">
+            <h2>购买车票 (buy_ticket)</h2>
+            <form class="command-form" data-command-name="buy_ticket">
+                <div class="form-group">
+                    <label for="buy_ticket_u">用户 (-u):</label>
+                    <input type="text" id="buy_ticket_u" name="u" required>
+                </div>
+                <div class="form-group">
+                    <label for="buy_ticket_i">车次ID (-i):</label>
+                    <input type="text" id="buy_ticket_i" name="i" required>
+                </div>
+                <div class="form-group">
+                    <label for="buy_ticket_d">出发日期 (-d) (例如: 08-17):</label>
+                    <input type="text" id="buy_ticket_d" name="d" placeholder="MM-DD" required>
+                </div>
+                <div class="form-group">
+                    <label for="buy_ticket_n">购买数量 (-n):</label>
+                    <input type="number" id="buy_ticket_n" name="n" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="buy_ticket_f">出发站 (-f):</label>
+                    <input type="text" id="buy_ticket_f" name="f" required>
+                </div>
+                <div class="form-group">
+                    <label for="buy_ticket_t">到达站 (-t):</label>
+                    <input type="text" id="buy_ticket_t" name="t" required>
+                </div>
+                <div class="form-group">
+                    <label for="buy_ticket_q">候补购票 (-q):</label>
+                    <select id="buy_ticket_q" name="q">
+                        <option value="false">false (不候补)</option>
+                        <option value="true">true (候补)</option>
+                    </select>
+                </div>
+                <button type="submit">购买</button>
+            </form>
+            <div class="result-area">
+                <h3>操作结果:</h3>
+                <p id="buy_ticketResult"></p>
+            </div>
+        </div>
+
+        <div id="query_order" class="command-module hidden">
+            <h2>查询订单 (query_order)</h2>
+            <form class="command-form" data-command-name="query_order">
+                <div class="form-group">
+                    <label for="query_order_u">用户 (-u):</label>
+                    <input type="text" id="query_order_u" name="u" required>
+                </div>
+                <button type="submit">查询</button>
+            </form>
+            <div class="result-area">
+                <h3>操作结果:</h3>
+                <p id="query_orderResult"></p>
+                <div id="query_orderDetails"></div> </div>
+        </div>
+
+        <div id="refund_ticket" class="command-module hidden">
+            <h2>退票 (refund_ticket)</h2>
+            <form class="command-form" data-command-name="refund_ticket">
+                <div class="form-group">
+                    <label for="refund_ticket_u">用户 (-u):</label>
+                    <input type="text" id="refund_ticket_u" name="u" required>
+                </div>
+                <div class="form-group">
+                    <label for="refund_ticket_n">订单序号 (-n) (1-based, 默认1):</label>
+                    <input type="number" id="refund_ticket_n" name="n" min="1" value="1">
+                </div>
+                <button type="submit">退票</button>
+            </form>
+            <div class="result-area">
+                <h3>操作结果:</h3>
+                <p id="refund_ticketResult"></p>
+            </div>
+        </div>
+
+        <div id="clean" class="command-module hidden">
+            <h2>清除数据 (clean)</h2>
+            <p>点击下方按钮将清除所有后端数据。此操作不可逆，请谨慎！</p>
+            <button id="confirmCleanData">确认清除所有数据</button>
+            <div class="result-area">
+                <h3>操作结果:</h3>
+                <p id="cleanResult"></p>
+            </div>
+        </div>
+
+        <div id="exit_backend" class="command-module hidden">
+            <h2>退出后端服务</h2>
+            <p>点击下方按钮将终止C++后端进程。前端将尝试自动重连并启动一个新的C++进程。</p>
+            <button id="confirmExitBackend">确认退出后端</button>
+            <div class="result-area">
+                <h3>操作结果:</h3>
+                <p id="exitBackendResult"></p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
