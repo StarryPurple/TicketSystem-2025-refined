@@ -5,7 +5,7 @@
 
 namespace insomnia {
 
-inline constexpr size_t NODE_CAPACITY_LIM = 0;
+inline constexpr size_t NODE_CAPACITY_LIM = 4;
 
 class BptNodeBase {
 public:

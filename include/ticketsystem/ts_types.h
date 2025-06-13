@@ -32,7 +32,7 @@ using mail_addr_t  = ascii_str_t<30>;
 using access_lvl_t = short;
 constexpr access_lvl_t HIGHEST_ACCESS_LVL = 10;
 
-constexpr size_t MAX_STATION_NUM = 20;
+constexpr size_t MAX_STATION_NUM = 100;
 using time_hm_t       = TimeHM;
 using time_dur_t      = minutes;
 using dur_list_t      = ism::array<time_dur_t, MAX_STATION_NUM>;
